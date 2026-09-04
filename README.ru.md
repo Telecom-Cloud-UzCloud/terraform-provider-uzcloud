@@ -1,6 +1,6 @@
 # Terraform UzCloud Provider
 
-[🇬🇧 English](README.md) | [🇷🇺 Русский](README.ru.md)
+[🇬🇧 English](README.md) | [🇷🇺 Русский](README.ru.md) | [🇺🇿 O'zbekcha](README.uz.md)
 
 Terraform-провайдер для [UzCloud](https://uzcloud.uz/), построенный на [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework).
 
