@@ -16,7 +16,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 0.1.0"
+      version = ">= 1.0.2"
     }
   }
 }
@@ -123,7 +123,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 0.1.0"
+      version = ">= 1.0.2"
     }
   }
 }
