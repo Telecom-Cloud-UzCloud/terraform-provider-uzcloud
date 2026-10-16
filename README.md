@@ -30,6 +30,7 @@ The provider's Terraform Registry source address is `telecom-cloud-uzcloud/uzclo
 * [uzc_blockstorage_snapshot](docs/resources/blockstorage_snapshot.md) - point-in-time snapshot of a block storage volume;
 * [uzc_blockstorage_snapshot_revert](docs/resources/blockstorage_snapshot_revert.md) - reverts a block storage volume to a snapshot;
 * [uzc_blockstorage_backup](docs/resources/blockstorage_backup.md) - recurring backup schedule for a block storage volume;
+* [uzc_object_storage](docs/resources/object_storage.md) - S3-compatible object storage (Ceph);
 
 **Networking**
 
@@ -105,7 +106,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.0.2"
+      version = ">= 1.1.0"
     }
   }
 }
@@ -201,14 +202,44 @@ Set the provider credentials and test-scope variables, then run:
 ```bash
 export TF_ACC=1
 export UZC_API_TOKEN=<api-token>
-export UZC_TEST_REGION=<region>
-export UZC_TEST_CLOUD_PROVIDER=<cloud-provider>
-export UZC_TEST_TEMPLATE=<template>
-export UZC_TEST_PLAN=<plan>
-export UZC_TEST_SSH_KEY=<ssh-key>
+export UZC_TEST_PROJECT=<existing-project-slug>
+export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # for tests that create a VM
+export UZC_TEST_SSH_KEY=<existing-ssh-key-slug>            # for tests that create a VM
 
 make testacc
 ```
+
+Defaults that match the Tashkent region and can be overridden per account:
+`UZC_TEST_REGION` (`tashkent`), `UZC_TEST_CLOUD_PROVIDER` (`nimbo`),
+`UZC_TEST_BILLING_CYCLE` (`monthly`), `UZC_TEST_TEMPLATE` (`ubuntu-2404`),
+`UZC_TEST_PLAN` (`optimal-line-2`), `UZC_TEST_STORAGE_CATEGORY` (`ssd-storage`),
+`UZC_TEST_ROOT_DISK_PLAN` (`standard-4`), `UZC_TEST_VOLUME_PLAN` (the root disk plan),
+`UZC_TEST_VPC_PLAN` (`vpc-1`). Valid slugs for your account come from the
+`uzc_templates`, `uzc_plans`, `uzc_storage_categories`, and `uzc_billing_cycles`
+data sources.
+
+Run a single group instead of everything, for example:
+
+```bash
+TF_ACC=1 go test ./internal/provider -run 'TestAccDataSources' -v     # free, creates nothing
+TF_ACC=1 go test ./internal/provider -run 'TestAccVirtualMachine_lifecycle' -v -timeout 60m
+TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
+```
+
+| Test | Covers | Needs |
+| --- | --- | --- |
+| `TestAccDataSources_*` | every argument-free data source, plans, single-item lookups | project |
+| `TestAccSSHKey_basic`, `TestAccProject_basic` | create, import, rename | project |
+| `TestAccNetwork_*`, `TestAccVPC_*` | isolated network, VM in a new network, VPC | project; optional `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
+| `TestAccVirtualMachine_lifecycle` | create, import, in-place rename, stop and start | network, SSH key |
+| `TestAccBlockStorage_*` | attach, detach, re-attach, several extra disks, attach on creation | network, SSH key |
+| `TestAccObjectStorage_basic` | object storage create, import, in-place resize | project |
+| `TestAccVirtualMachine_public`, `TestAccIPAddress_firewall` | public IP, firewall rule | `UZC_TEST_PUBLIC=1`, `UZC_TEST_IP_PLAN` |
+| `TestAccKubernetesCluster_basic` | cluster create, import, optional plan change | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |
+| `TestAccVMSnapshot_basic` | VM snapshot | `UZC_TEST_SNAPSHOT_PLAN` |
+
+These tests create billable resources. `uzc_static_nat` is not covered because UzCloud
+has no endpoint to disable it, so a test could not clean up after itself.
 
 ## Documentation
 

@@ -16,7 +16,7 @@ Manages a UzCloud VPC network.
 resource "uzc_vpc" "example" {
   name           = "example-vpc"
   cloud_provider = "nimbo"
-  cidr           = "10.0.0.0/16"
+  cidr           = "10.0.0.0"
   size           = 16
   plan           = "vpc-1"
 }
@@ -27,11 +27,11 @@ resource "uzc_vpc" "example" {
 
 ### Required
 
-- `cidr` (String) CIDR block for the VPC. Changing this forces recreation.
+- `cidr` (String) Network address of the VPC, e.g. `10.0.0.0`; the prefix length goes in `size`. A full CIDR such as `10.0.0.0/16` is also accepted, as long as its prefix length equals `size`. Changing this forces recreation.
 - `cloud_provider` (String) Cloud provider slug. Changing this forces recreation.
 - `name` (String) Name of the VPC. Mutable.
 - `plan` (String) Plan slug. Changing this forces recreation.
-- `size` (Number) VPC size (subnet size). Changing this forces recreation.
+- `size` (Number) Prefix length of the VPC network, e.g. `16` for `10.0.0.0/16`. Changing this forces recreation.
 
 ### Optional
 

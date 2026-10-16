@@ -30,6 +30,7 @@ Provayderning Terraform Registry manzili: `telecom-cloud-uzcloud/uzcloud`.
 * [uzc_blockstorage_snapshot](docs/resources/blockstorage_snapshot.md) - blokli diskning snapshoti;
 * [uzc_blockstorage_snapshot_revert](docs/resources/blockstorage_snapshot_revert.md) - blokli diskni snapshotga qaytaradi;
 * [uzc_blockstorage_backup](docs/resources/blockstorage_backup.md) - blokli disk uchun davriy zaxira nusxalash jadvali;
+* [uzc_object_storage](docs/resources/object_storage.md) - S3 bilan mos obyektli xotira (Ceph);
 
 **Tarmoq**
 
@@ -105,7 +106,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.0.2"
+      version = ">= 1.1.0"
     }
   }
 }
@@ -204,14 +205,43 @@ Provayder kredensiallari va test ko'lami o'zgaruvchilarini o'rnating, so'ng ishg
 ```bash
 export TF_ACC=1
 export UZC_API_TOKEN=<api-token>
-export UZC_TEST_REGION=<region>
-export UZC_TEST_CLOUD_PROVIDER=<cloud-provider>
-export UZC_TEST_TEMPLATE=<template>
-export UZC_TEST_PLAN=<plan>
-export UZC_TEST_SSH_KEY=<ssh-key>
+export UZC_TEST_PROJECT=<existing-project-slug>
+export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # for tests that create a VM
+export UZC_TEST_SSH_KEY=<existing-ssh-key-slug>            # for tests that create a VM
 
 make testacc
 ```
+
+Standart qiymatlar Toshkent regioniga mos va akkauntga qarab o'zgartiriladi:
+`UZC_TEST_REGION` (`tashkent`), `UZC_TEST_CLOUD_PROVIDER` (`nimbo`),
+`UZC_TEST_BILLING_CYCLE` (`monthly`), `UZC_TEST_TEMPLATE` (`ubuntu-2404`),
+`UZC_TEST_PLAN` (`optimal-line-2`), `UZC_TEST_STORAGE_CATEGORY` (`ssd-storage`),
+`UZC_TEST_ROOT_DISK_PLAN` (`standard-4`), `UZC_TEST_VOLUME_PLAN` (ildiz disk tarifi),
+`UZC_TEST_VPC_PLAN` (`vpc-1`). Akkauntingiz uchun to'g'ri slug'lar `uzc_templates`,
+`uzc_plans`, `uzc_storage_categories` va `uzc_billing_cycles` datasource'laridan olinadi.
+
+Hammasini emas, alohida guruhni ishga tushirish mumkin, masalan:
+
+```bash
+TF_ACC=1 go test ./internal/provider -run 'TestAccDataSources' -v     # bepul, hech narsa yaratmaydi
+TF_ACC=1 go test ./internal/provider -run 'TestAccVirtualMachine_lifecycle' -v -timeout 60m
+TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
+```
+
+| Test | Nimani tekshiradi | Nima kerak |
+| --- | --- | --- |
+| `TestAccDataSources_*` | argumentsiz barcha datasource'lar, tariflar, slug bo'yicha qidiruv | loyiha |
+| `TestAccSSHKey_basic`, `TestAccProject_basic` | yaratish, import, nomini o'zgartirish | loyiha |
+| `TestAccNetwork_*`, `TestAccVPC_*` | izolyatsiyalangan tarmoq, yangi tarmoqdagi VM, VPC | loyiha; ixtiyoriy `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
+| `TestAccVirtualMachine_lifecycle` | yaratish, import, joyida nomini o'zgartirish, to'xtatish va ishga tushirish | tarmoq, SSH-kalit |
+| `TestAccBlockStorage_*` | ulash, uzish, qayta ulash, bir nechta qo'shimcha disk, yaratishda ulash | tarmoq, SSH-kalit |
+| `TestAccObjectStorage_basic` | obyektli xotirani yaratish, import, o'lchamini joyida o'zgartirish | loyiha |
+| `TestAccVirtualMachine_public`, `TestAccIPAddress_firewall` | ochiq IP, firewall qoidasi | `UZC_TEST_PUBLIC=1`, `UZC_TEST_IP_PLAN` |
+| `TestAccKubernetesCluster_basic` | klaster yaratish, import, ixtiyoriy tarif almashtirish | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |
+| `TestAccVMSnapshot_basic` | VM snapshoti | `UZC_TEST_SNAPSHOT_PLAN` |
+
+Bu testlar pullik resurslar yaratadi. `uzc_static_nat` qamrab olinmagan: UzCloudda uni
+o'chirish uchun endpoint yo'q, shuning uchun test o'zidan keyin tozalay olmaydi.
 
 ## Hujjatlar
 

@@ -30,6 +30,7 @@ Registry-адрес провайдера: `telecom-cloud-uzcloud/uzcloud`.
 * [uzc_blockstorage_snapshot](docs/resources/blockstorage_snapshot.md) - снапшот блочного диска;
 * [uzc_blockstorage_snapshot_revert](docs/resources/blockstorage_snapshot_revert.md) - откат блочного диска к снапшоту;
 * [uzc_blockstorage_backup](docs/resources/blockstorage_backup.md) - расписание регулярного резервного копирования блочного диска;
+* [uzc_object_storage](docs/resources/object_storage.md) - объектное хранилище, совместимое с S3 (Ceph);
 
 **Сеть**
 
@@ -105,7 +106,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.0.2"
+      version = ">= 1.1.0"
     }
   }
 }
@@ -201,14 +202,43 @@ Acceptance-тесты прогоняют полный жизненный цик�
 ```bash
 export TF_ACC=1
 export UZC_API_TOKEN=<api-token>
-export UZC_TEST_REGION=<region>
-export UZC_TEST_CLOUD_PROVIDER=<cloud-provider>
-export UZC_TEST_TEMPLATE=<template>
-export UZC_TEST_PLAN=<plan>
-export UZC_TEST_SSH_KEY=<ssh-key>
+export UZC_TEST_PROJECT=<existing-project-slug>
+export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # for tests that create a VM
+export UZC_TEST_SSH_KEY=<existing-ssh-key-slug>            # for tests that create a VM
 
 make testacc
 ```
+
+Значения по умолчанию подходят для региона Ташкент и переопределяются под аккаунт:
+`UZC_TEST_REGION` (`tashkent`), `UZC_TEST_CLOUD_PROVIDER` (`nimbo`),
+`UZC_TEST_BILLING_CYCLE` (`monthly`), `UZC_TEST_TEMPLATE` (`ubuntu-2404`),
+`UZC_TEST_PLAN` (`optimal-line-2`), `UZC_TEST_STORAGE_CATEGORY` (`ssd-storage`),
+`UZC_TEST_ROOT_DISK_PLAN` (`standard-4`), `UZC_TEST_VOLUME_PLAN` (тариф корневого диска),
+`UZC_TEST_VPC_PLAN` (`vpc-1`). Допустимые slug-и для вашего аккаунта дают датасорсы
+`uzc_templates`, `uzc_plans`, `uzc_storage_categories` и `uzc_billing_cycles`.
+
+Можно запускать отдельную группу, а не всё сразу, например:
+
+```bash
+TF_ACC=1 go test ./internal/provider -run 'TestAccDataSources' -v     # бесплатно, ничего не создаёт
+TF_ACC=1 go test ./internal/provider -run 'TestAccVirtualMachine_lifecycle' -v -timeout 60m
+TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
+```
+
+| Тест | Что проверяет | Что нужно |
+| --- | --- | --- |
+| `TestAccDataSources_*` | все датасорсы без аргументов, тарифы, поиск по slug | проект |
+| `TestAccSSHKey_basic`, `TestAccProject_basic` | создание, импорт, переименование | проект |
+| `TestAccNetwork_*`, `TestAccVPC_*` | изолированная сеть, VM в новой сети, VPC | проект; опционально `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
+| `TestAccVirtualMachine_lifecycle` | создание, импорт, переименование на месте, остановка и запуск | сеть, SSH-ключ |
+| `TestAccBlockStorage_*` | подключение, отключение, повторное подключение, несколько дополнительных дисков, подключение при создании | сеть, SSH-ключ |
+| `TestAccObjectStorage_basic` | создание объектного хранилища, импорт, изменение размера на месте | проект |
+| `TestAccVirtualMachine_public`, `TestAccIPAddress_firewall` | публичный IP, правило файрвола | `UZC_TEST_PUBLIC=1`, `UZC_TEST_IP_PLAN` |
+| `TestAccKubernetesCluster_basic` | создание кластера, импорт, опциональная смена тарифа | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |
+| `TestAccVMSnapshot_basic` | снапшот VM | `UZC_TEST_SNAPSHOT_PLAN` |
+
+Эти тесты создают платные ресурсы. `uzc_static_nat` не покрыт: в UzCloud нет эндпоинта,
+чтобы его отключить, поэтому тест не смог бы за собой прибрать.
 
 ## Документация
 

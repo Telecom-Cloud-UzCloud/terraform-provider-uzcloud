@@ -4,6 +4,47 @@
 
 ## Unreleased
 
+## 1.1.0 (2026-yil 16-oktabr)
+
+##### YANGI:
+
+* storage: **Yangi resurs:** `uzc_object_storage`, S3 bilan mos obyektli xotira (Ceph): yaratish, import, `size_gb` va `billing_cycle`ni joyida o'zgartirish, `s3_endpoint` eksporti
+* kubernetes: `uzc_kubernetes_cluster` UzCloud konsolidagi kabi `master_plan`, `worker_plan`, `blockstorage_plan` va `cloud_provider_setup`ni qabul qiladi; `plan` ishlashda davom etadi va worker tarifi sifatida ishlatiladi
+* provider: har qanday asinxron operatsiyani kutishni cheklovchi yangi `operation_timeout_minutes` sozlamasi (yoki `UZC_OPERATION_TIMEOUT`, standart 20)
+
+##### YAXSHILANISHLAR:
+
+* provider: har bir resurs UzCloud operatsiya natijasini tasdiqlashini kutadi (yaratilgan resurs o'qiladi, o'zgarish ko'rinadi, o'chirilgan resurs yo'qoladi) va `operation_timeout_minutes` o'tgach aniq xato bilan to'xtaydi; `uzc_virtual_machine` o'zining yaratish, o'zgartirish va o'chirish taymautlarini saqlaydi
+* provider: API xatolari faqat «Validation errors» emas, balki UzCloud yuboradigan maydonlar bo'yicha validatsiya tafsilotlarini ham o'z ichiga oladi, masalan `[storage_category: The storage category field is required.]`
+* storage: `uzc_vm_snapshot`, `uzc_blockstorage_snapshot`, `uzc_vm_backup` va `uzc_blockstorage_backup` standart holatda `hourly` billing davridan foydalanadi: foydalanishga qarab hisoblanadigan bu xizmatlar uchun API oylik va yillik davrlarni rad etadi
+* storage: `uzc_blockstorage_attachment` disk ulangan (o'chirishda esa uzilgan) deb ko'rsatilguncha kutadi; disk snapshoti disk Ready bo'lguncha qayta yuboriladi; disk uzilishi tugaguncha uni o'chirish qayta urinib ko'riladi
+* compute: ochiq IPni kutish 10 daqiqa bilan cheklangan va IP-manzillar kvotasi haqida maslahat bilan tugaydi; kutishi muvaffaqiyatsiz bo'lgan VM boshqaruvsiz ishlab qolish o'rniga state'da tainted sifatida saqlanadi
+* compute: VMning zaxira nusxalash jadvali hali bekor qilinayotgan bo'lsa, VMni o'chirish qayta urinib ko'riladi
+* network: `uzc_vpc`, `uzc_network`, `uzc_project` va `uzc_vpn_customer_gateway` nomini o'zgartirish resursni qayta o'qish orqali tekshiriladi
+* tests: har bir resurs guruhi uchun acceptance testlar, barcha datasource'lar uchun bepul smoke test va akkauntning tariflari, bulutli provayderlari, regionlari hamda xom API javoblarini chiqaradigan razvedka testlari
+
+##### TUZATISHLAR:
+
+* compute: `uzc_virtual_machine`ni yaratish `offering`/`ipaddresses`da «Value Conversion Error» bilan to'xtardi
+* compute: VM yaratish so'rovi konsol bilan mos keladi (`username`, bo'sh satrlar o'rniga `null`); nomini o'zgartirish `vm_label`ni yuboradi
+* network: `uzc_vpc` prefiksli CIDRni rad etardi («The cidr field must be a valid IP address»); endi `10.0.0.0/16` ham, `10.0.0.0` ham qabul qilinadi
+* network: provayder blokidan meros qilib olingan `region`, `project` va `billing_cycle` `uzc_vpc`, `uzc_network`, `uzc_ip_address` va `uzc_virtual_machine` yaratilgandan keyin noma'lum qolardi
+* network: o'zgartirishga bo'sh javob `uzc_vpc`, `uzc_network` va `uzc_vpn_customer_gateway` slug'ini o'chirib yuborardi, keyin esa o'chirish buzilardi
+* project: `uzc_project` yaratish 422 bilan to'xtardi (endi `icon` har doim yuboriladi, standart `cloud-15`, `status` esa 1/0 ko'rinishida); satr ko'rinishida kelgan status tahlil qilinadi; o'chirish `DELETE /projects/{slug}` orqali amalga oshiriladi
+* provider: multipart so'rovlardagi mantiqiy maydonlar Laravel validatsiyasi talab qilganidek 1/0 ko'rinishida yuboriladi (u «true»/«false»ni rad etadi)
+* provider: har qanday kutilmagan 4xx javob (400, 405, 409 va h.k.) xato hisoblanadi; ilgari u muvaffaqiyat deb hisoblanardi
+* vpn: `uzc_vpn_customer_gateway` `dead_peer_detection`ni yuboradi (spetsifikatsiyadagi yozilish rad etilardi) va o'qishda `gateway`ni saqlaydi; `uzc_vpn_user` yaratilgandan keyin o'z slug'ini topadi
+* storage: API `storage_category`ni qaytarmagani uchun `uzc_blockstorage` endi qayta yaratishni talab qilmaydi (u `storage_setting`dan o'qiladi); `uzc_blockstorage_attachment` yangilashda state'dan tushib qolmaydi
+* data sources: `uzc_plans` va `uzc_account_balance` satr ko'rinishida yuborilgan sonlarni va bo'sh massiv ko'rinishida yuborilgan atributlarni qabul qiladi
+
+##### DIQQAT:
+
+* provider: `terraform destroy` endi bekor qilish so'rovi qabul qilingach darhol tugamaydi, balki resurslar haqiqatan o'chirilishini kutadi; o'chirish ko'proq vaqt oladi va `operation_timeout_minutes` o'tgach xato bilan to'xtaydi
+* storage: snapshot va zaxira nusxalar endi standart holatda `hourly`dan foydalanadi; boshqa davr kerak bo'lsa, `billing_cycle`ni aniq belgilang
+* api: provayderda tuzatib bo'lmaydigan UzCloud tomonidagi ma'lum muammolar: VM nomini o'zgartirish xato beradi (`chageLabel`), VPC nomini o'zgartirish qabul qilinadi, lekin qo'llanilmaydi, SSH-kalit qo'shish 500 qaytaradi, loyihani o'chirish rad etiladi («xizmatlari bor loyihalarni o'chirib bo'lmaydi»), test akkauntida Kubernetes yaratish «not configured properly» deb javob beradi
+
+## 1.0.2 (2026-yil 4-sentabr)
+
 ##### YANGI:
 
 * provider: Terraform Plugin Framework asosida qurilgan UzCloud Terraform provayderining birinchi relizi

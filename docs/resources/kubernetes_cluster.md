@@ -20,14 +20,18 @@ TODO(api): the spec documents no endpoint to retrieve a cluster's kubeconfig. Wi
 # so it can't be wired up to a kubernetes/helm provider in the same run.
 # Fetch it from the UzCloud portal instead.
 resource "uzc_kubernetes_cluster" "example" {
-  name           = "example-cluster"
-  version        = "v1.28.4"
-  node_size      = 2
-  control_nodes  = 1
-  cloud_provider = "nimbo"
-  billing_cycle  = "monthly"
-  plan           = "k8s-cs2"
-  ssh_key        = uzc_ssh_key.example.slug
+  name              = "example-cluster"
+  version           = "1.36.0"
+  node_size         = 2
+  control_nodes     = 1
+  cloud_provider    = "nimbo"
+  billing_cycle     = "monthly"
+  master_plan       = "k8s-master-default"
+  worker_plan       = "k8s-start-worker-1"
+  blockstorage_plan = "standard-4"
+  storage_category  = "ssd-storage"
+  auth_method       = "ssh-key"
+  ssh_key           = uzc_ssh_key.example.slug
 }
 ```
 
@@ -46,16 +50,20 @@ resource "uzc_kubernetes_cluster" "example" {
 
 - `auth_method` (String) "ssh-key" or "password".
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset. Mutable: changing it calls change-plan.
+- `blockstorage_plan` (String) Block storage plan for the node disks, e.g. "standard-4" (see uzc_plans with service "Block Storage"). Changing it in place is not supported yet.
+- `cloud_provider_setup` (String) Cloud provider setup slug the cluster is provisioned on, e.g. "cloudstack-tas1" (the console sends it; it is region.cloud_provider_setup.slug in API responses). Changing this forces recreation.
 - `custom_plan` (Attributes) Custom sizing, as an alternative to `plan`. Mutually exclusive with `plan`; exactly one must be set. Mutable: changing it calls change-plan. (see [below for nested schema](#nestedatt--custom_plan))
 - `enable_ha` (Boolean) Whether to enable a highly-available control plane.
+- `master_plan` (String) Plan slug for the control-plane nodes, e.g. "k8s-master-default" (see uzc_plans with service "Kubernetes"). Changing it in place is not supported yet.
 - `networks` (List of String) Network slugs to attach the cluster's nodes to.
 - `password` (String, Sensitive) OS login password, used when `auth_method` is "password".
-- `plan` (String) Plan slug. Mutually exclusive with `custom_plan`; exactly one must be set. Mutable: changing it calls change-plan.
+- `plan` (String) Legacy single plan slug, used as the worker plan when `worker_plan` is unset. Prefer `master_plan` and `worker_plan`, which is what the UzCloud console sends. Mutable: changing it calls change-plan.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.
 - `ssh_key` (String) SSH key slug, used when `auth_method` is "ssh-key".
 - `storage_category` (String)
 - `username` (String) OS login username, used when `auth_method` is "password".
+- `worker_plan` (String) Plan slug for the worker nodes, e.g. "k8s-start-worker-1". Exactly one of `worker_plan`, `plan` or `custom_plan` must be set. Changing it in place is not supported yet.
 
 ### Read-Only
 

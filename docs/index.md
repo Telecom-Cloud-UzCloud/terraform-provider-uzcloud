@@ -16,7 +16,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.0.2"
+      version = ">= 1.1.0"
     }
   }
 }
@@ -86,16 +86,18 @@ rather than sending an empty value to the API.
 UzCloud's API shapes several parts of this provider's behavior in ways
 that are worth knowing about before relying on it:
 
-- **Deletion is usually a billing cancellation, and it can be asynchronous.**
-  Most resources (`uzc_project`, `uzc_network`, `uzc_vpc`, and most other
-  billable services) have no dedicated delete endpoint; destroying them
-  submits a cancellation request to UzCloud's billing system instead. For
-  the large majority of these, `terraform destroy` reports success as soon
-  as the cancellation is *accepted*, not once the underlying resource is
-  actually gone; the API gives no per-resource way to confirm the
-  cancellation has finished processing. `uzc_virtual_machine` is the
-  documented exception: its Delete waits (polling, with a configurable
-  timeout) until the VM is confirmed gone before returning.
+- **Operations are asynchronous, and the provider waits for them.** Most
+  UzCloud requests only start an operation, and most resources have no
+  delete endpoint: destroying them submits a billing cancellation request.
+  The provider therefore confirms every outcome by polling the API: a
+  created resource must become readable (a Kubernetes cluster must also
+  leave its provisioning states), an update must show the new value, and a
+  deleted resource must disappear. If that does not happen within
+  `operation_timeout_minutes` (default 20, or `UZC_OPERATION_TIMEOUT`), the
+  run fails with an error saying what it was waiting for, instead of
+  reporting a success that has not happened. `uzc_virtual_machine` keeps its
+  own `create_timeout_minutes`, `update_timeout_minutes`, and
+  `delete_timeout_minutes`.
 - **Many attributes are immutable.** Where the API documents no update
   endpoint for a field (or for an entire resource), changing that
   attribute forces Terraform to destroy and recreate the resource rather
@@ -123,7 +125,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.0.2"
+      version = ">= 1.1.0"
     }
   }
 }
@@ -157,6 +159,7 @@ provider "uzc" {
 - `billing_cycle` (String) Default billing_cycle slug inherited by resources that don't set their own `billing_cycle`.
 - `cloud_provider` (String) Default cloud_provider slug inherited by resources that don't set their own `cloud_provider`.
 - `max_retries` (Number) Maximum number of retries for rate-limited (429), server-error (5xx), and network-failure responses. Defaults to 3.
+- `operation_timeout_minutes` (Number) How long to wait, in minutes, for UzCloud to finish an operation before failing: a created resource to appear and settle, an update to take effect, a deleted resource to disappear. Most UzCloud operations are asynchronous, so the provider polls until the result is visible through the API. Defaults to 20. Can also be set via the UZC_OPERATION_TIMEOUT environment variable. uzc_virtual_machine has its own create/update/delete timeouts.
 - `project` (String) Default project slug inherited by resources that don't set their own `project`.
 - `region` (String) Default region slug inherited by resources that don't set their own `region`.
 - `timeout_seconds` (Number) HTTP request timeout, in seconds. Defaults to 60.

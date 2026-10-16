@@ -4,6 +4,47 @@
 
 ## Unreleased
 
+## 1.1.0 (16 октября 2026)
+
+##### НОВОЕ:
+
+* storage: **Новый ресурс:** `uzc_object_storage`, объектное хранилище, совместимое с S3 (Ceph): создание, импорт, изменение `size_gb` и `billing_cycle` на месте, экспорт `s3_endpoint`
+* kubernetes: `uzc_kubernetes_cluster` принимает `master_plan`, `worker_plan`, `blockstorage_plan` и `cloud_provider_setup`, как при создании кластера в консоли UzCloud; `plan` продолжает работать и используется как тариф воркеров
+* provider: новая настройка `operation_timeout_minutes` (или `UZC_OPERATION_TIMEOUT`, по умолчанию 20), ограничивающая любое ожидание асинхронной операции
+
+##### УЛУЧШЕНИЯ:
+
+* provider: каждый ресурс дожидается, пока UzCloud подтвердит результат операции (созданный ресурс читается, изменение видно, удалённый ресурс исчез), и падает с явной ошибкой по истечении `operation_timeout_minutes`; у `uzc_virtual_machine` остаются собственные таймауты создания, изменения и удаления
+* provider: ошибки API содержат детали валидации по полям, которые присылает UzCloud, например `[storage_category: The storage category field is required.]`, а не только «Validation errors»
+* storage: `uzc_vm_snapshot`, `uzc_blockstorage_snapshot`, `uzc_vm_backup` и `uzc_blockstorage_backup` по умолчанию используют цикл оплаты `hourly`: для этих сервисов с оплатой по факту API отвергает месячный и годовой циклы
+* storage: `uzc_blockstorage_attachment` ждёт, пока диск будет показан подключённым (и отключённым при удалении); снапшот диска повторяется, пока диск не станет Ready; удаление диска повторяется, пока ещё идёт отключение
+* compute: ожидание публичного IP ограничено 10 минутами и завершается подсказкой про квоту IP-адресов; VM, ожидание которой не удалось, сохраняется в state как tainted, а не остаётся работать без управления
+* compute: удаление VM повторяется, пока ещё отменяется её расписание бэкапов
+* network: переименование `uzc_vpc`, `uzc_network`, `uzc_project` и `uzc_vpn_customer_gateway` проверяется повторным чтением ресурса
+* tests: acceptance-тесты для каждой группы ресурсов, бесплатный смоук-тест всех датасорсов и тесты-разведчики, печатающие тарифы, облачные провайдеры, регионы и сырые ответы API аккаунта
+
+##### ИСПРАВЛЕНИЯ:
+
+* compute: создание `uzc_virtual_machine` падало с «Value Conversion Error» на `offering`/`ipaddresses`
+* compute: запрос создания VM совпадает с консолью (`username`, `null` вместо пустых строк); переименование отправляет `vm_label`
+* network: `uzc_vpc` отвергал CIDR с префиксом («The cidr field must be a valid IP address»); теперь принимаются и `10.0.0.0/16`, и `10.0.0.0`
+* network: `region`, `project` и `billing_cycle`, унаследованные из блока провайдера, оставались неизвестными после создания `uzc_vpc`, `uzc_network`, `uzc_ip_address` и `uzc_virtual_machine`
+* network: пустой ответ на изменение затирал slug у `uzc_vpc`, `uzc_network` и `uzc_vpn_customer_gateway`, после чего ломалось удаление
+* project: создание `uzc_project` падало с 422 (теперь всегда отправляется `icon`, по умолчанию `cloud-15`, а `status` как 1/0); статус, пришедший строкой, разбирается; удаление идёт через `DELETE /projects/{slug}`
+* provider: булевы поля в multipart-запросах отправляются как 1/0, как требует валидация Laravel (она отвергает «true»/«false»)
+* provider: любой неожиданный ответ 4xx (400, 405, 409 и т. д.) считается ошибкой; раньше он считался успехом
+* vpn: `uzc_vpn_customer_gateway` отправляет `dead_peer_detection` (написание из спецификации отвергалось) и сохраняет `gateway` при чтении; `uzc_vpn_user` находит свой slug после создания
+* storage: `uzc_blockstorage` больше не требует пересоздания из-за того, что API не возвращает `storage_category` (он читается из `storage_setting`); `uzc_blockstorage_attachment` больше не выпадает из state при обновлении
+* data sources: `uzc_plans` и `uzc_account_balance` принимают числа, присланные строкой, и атрибуты, присланные пустым массивом
+
+##### ВНИМАНИЕ:
+
+* provider: `terraform destroy` теперь ждёт фактического удаления ресурсов, а не завершается сразу после принятия заявки на отмену; удаление занимает больше времени и падает по истечении `operation_timeout_minutes`
+* storage: снапшоты и бэкапы теперь по умолчанию используют `hourly`; если нужен другой цикл, задайте `billing_cycle` явно
+* api: известные проблемы на стороне UzCloud, которые не исправить в провайдере: переименование VM падает (`chageLabel`), переименование VPC принимается, но не применяется, добавление SSH-ключа отвечает 500, удаление проекта отклоняется («проекты с услугами нельзя удалить»), а создание Kubernetes на тестовом аккаунте отвечает «not configured properly»
+
+## 1.0.2 (4 сентября 2026)
+
 ##### НОВОЕ:
 
 * provider: первый релиз Terraform-провайдера UzCloud, построенного на Terraform Plugin Framework

@@ -35,7 +35,7 @@ resource "uzc_blockstorage_backup" "example" {
 
 ### Optional
 
-- `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
+- `billing_cycle` (String) Billing cycle slug. Defaults to "hourly": snapshots and backups are billed by usage, the API rejects monthly and yearly cycles for them, and the provider-level `billing_cycle` default is therefore not used.
 - `immediate` (Boolean) Whether to also run the first backup immediately.
 - `is_vm_password_required` (Boolean) Whether a password is required to access the backed-up virtual machine.
 - `is_vm_ssh_required` (Boolean) Whether SSH access is required for the backed-up virtual machine.

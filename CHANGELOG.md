@@ -4,6 +4,47 @@
 
 ## Unreleased
 
+## 1.1.0 (October 16, 2026)
+
+##### FEATURES:
+
+* storage: **New Resource:** `uzc_object_storage`, an S3-compatible object storage (Ceph): create, import, in-place change of `size_gb` and `billing_cycle`, `s3_endpoint` exported
+* kubernetes: `uzc_kubernetes_cluster` accepts `master_plan`, `worker_plan`, `blockstorage_plan` and `cloud_provider_setup`, the way the UzCloud console creates clusters; `plan` still works and is used as the worker plan
+* provider: new `operation_timeout_minutes` setting (or `UZC_OPERATION_TIMEOUT`, default 20) that bounds every wait for an asynchronous operation
+
+##### ENHANCEMENTS:
+
+* provider: every resource waits for UzCloud to confirm the outcome of an operation (a created resource is readable, an update shows the new value, a deleted resource is gone) and fails with an explicit error after `operation_timeout_minutes`; `uzc_virtual_machine` keeps its own create/update/delete timeouts
+* provider: API errors include the per-field validation details UzCloud sends, e.g. `[storage_category: The storage category field is required.]`, instead of only "Validation errors"
+* storage: `uzc_vm_snapshot`, `uzc_blockstorage_snapshot`, `uzc_vm_backup` and `uzc_blockstorage_backup` default to the `hourly` billing cycle: the API rejects monthly and yearly cycles for these usage-billed services
+* storage: `uzc_blockstorage_attachment` waits until the volume is reported attached (and detached on destroy); a volume snapshot is retried until the volume is Ready; deleting a volume is retried while a detach is still finishing
+* compute: the wait for a public IP is capped at 10 minutes and fails with a hint about the IP address quota; a VM whose wait fails is kept in state as tainted instead of being left running unmanaged
+* compute: deleting a VM is retried while its backup schedule is still being cancelled
+* network: renames of `uzc_vpc`, `uzc_network`, `uzc_project` and `uzc_vpn_customer_gateway` are verified by reading the resource back
+* tests: acceptance tests for every resource group, a free smoke test of all data sources, and discovery tests that print the plans, cloud providers, regions and raw API responses of an account
+
+##### BUG FIXES:
+
+* compute: creating a `uzc_virtual_machine` failed with "Value Conversion Error" on `offering`/`ipaddresses`
+* compute: the VM create request matches the console (`username`, `null` instead of empty strings); renaming sends `vm_label`
+* network: `uzc_vpc` rejected a CIDR with a prefix ("The cidr field must be a valid IP address"); `10.0.0.0/16` and `10.0.0.0` are both accepted now
+* network: `region`, `project` and `billing_cycle` inherited from the provider block were left unknown after creating `uzc_vpc`, `uzc_network`, `uzc_ip_address` and `uzc_virtual_machine`
+* network: an empty update response blanked the slug of `uzc_vpc`, `uzc_network` and `uzc_vpn_customer_gateway`, which then broke the delete
+* project: `uzc_project` creation failed with 422 (`icon` is now always sent, `cloud-15` by default, and `status` as 1/0); its status returned as a string is parsed; deletion uses `DELETE /projects/{slug}`
+* provider: multipart booleans are sent as 1/0, which Laravel's boolean validation requires (it rejects "true"/"false")
+* provider: any unexpected 4xx response (400, 405, 409, ...) is an error; it was treated as success before
+* vpn: `uzc_vpn_customer_gateway` sends `dead_peer_detection` (the spec's misspelling was rejected) and keeps `gateway` on read; `uzc_vpn_user` finds its slug after creation
+* storage: `uzc_blockstorage` no longer forces a replacement because the API omits `storage_category` (it is read from `storage_setting`); `uzc_blockstorage_attachment` is no longer dropped from state on refresh
+* data sources: `uzc_plans` and `uzc_account_balance` accept numbers sent as strings and attributes sent as empty arrays
+
+##### WARNING:
+
+* provider: `terraform destroy` now waits until resources are actually gone, instead of returning once a cancellation request is accepted; destroys take longer and fail after `operation_timeout_minutes`
+* storage: snapshots and backups now default to `hourly`; set `billing_cycle` explicitly if a different cycle is needed
+* api: known UzCloud-side issues, not fixable in the provider: renaming a VM fails (`chageLabel`), renaming a VPC is accepted but not applied, adding an SSH key answers 500, deleting a project is refused ("projects with services cannot be deleted"), and Kubernetes provisioning reports "not configured properly" on the test account
+
+## 1.0.2 (September 4, 2026)
+
 ##### FEATURES:
 
 * provider: initial release of the UzCloud Terraform provider, built on the Terraform Plugin Framework
