@@ -39,7 +39,6 @@ resource "uzc_load_balancer" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `name` (String)
 - `network` (String) Slug of the uzc_network to attach the load balancer to.
 - `plan` (String)
@@ -49,6 +48,7 @@ resource "uzc_load_balancer" "example" {
 
 - `aquire_new_ip` (Boolean) Whether to acquire a new IP address for the load balancer. Mutually exclusive with `ipaddress` in practice.
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `ipaddress` (String) Slug of an existing uzc_ip_address to use instead of acquiring a new one.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.

@@ -34,10 +34,13 @@ The provider's Terraform Registry source address is `telecom-cloud-uzcloud/uzclo
 
 **Networking**
 
-* [uzc_network](docs/resources/network.md) - isolated or L2 network;
+* [uzc_network](docs/resources/network.md) - isolated or L2 network, or a tier (subnet) of a VPC;
 * [uzc_vpc](docs/resources/vpc.md) - VPC network;
 * [uzc_vpc_restart](docs/resources/vpc_restart.md) - restarts a VPC's network;
-* [uzc_vpc_acl_rule](docs/resources/vpc_acl_rule.md) - network ACL rule on a VPC;
+* [uzc_network_acl_list](docs/resources/network_acl_list.md) - network ACL list of a VPC, applied to its tiers;
+* [uzc_network_acl_rule](docs/resources/network_acl_rule.md) - rule in a network ACL list;
+* [uzc_vpc_static_route](docs/resources/vpc_static_route.md) - static route of a VPC;
+* [uzc_vpc_acl_rule](docs/resources/vpc_acl_rule.md) - deprecated: manages a network ACL list, use `uzc_network_acl_list`;
 * [uzc_virtual_router](docs/resources/virtual_router.md) - virtual router;
 * [uzc_ip_address](docs/resources/ip_address.md) - public or private IP address;
 * [uzc_static_nat](docs/resources/static_nat.md) - static NAT from an IP address to a virtual machine;
@@ -106,7 +109,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.1.0"
+      version = ">= 1.2.0"
     }
   }
 }
@@ -153,11 +156,14 @@ resource "uzc_virtual_machine" "example" {
   cloud_provider = "nimbo"
   project        = uzc_project.example.slug
   region         = "tashkent"
-  billing_cycle  = "hourly"
+  billing_cycle  = "monthly"
 
-  boot_source = "image"
-  template    = "ubuntu-22-04"
-  plan        = "box2cm2"
+  boot_source       = "image"
+  template          = "ubuntu-2404"
+  plan              = "optimal-line-2"
+  storage_category  = "ssd-storage" # see the uzc_storage_categories data source
+  blockstorage_plan = "standard-4"  # root disk plan, see uzc_plans with service "Block Storage"
+  network_type      = "Isolated"
 
   is_public = true
   ssh_key   = uzc_ssh_key.example.slug
@@ -203,7 +209,7 @@ Set the provider credentials and test-scope variables, then run:
 export TF_ACC=1
 export UZC_API_TOKEN=<api-token>
 export UZC_TEST_PROJECT=<existing-project-slug>
-export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # for tests that create a VM
+export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # optional: without it each test VM gets its own network
 export UZC_TEST_SSH_KEY=<existing-ssh-key-slug>            # for tests that create a VM
 
 make testacc
@@ -230,9 +236,9 @@ TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
 | --- | --- | --- |
 | `TestAccDataSources_*` | every argument-free data source, plans, single-item lookups | project |
 | `TestAccSSHKey_basic`, `TestAccProject_basic` | create, import, rename | project |
-| `TestAccNetwork_*`, `TestAccVPC_*` | isolated network, VM in a new network, VPC | project; optional `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
-| `TestAccVirtualMachine_lifecycle` | create, import, in-place rename, stop and start | network, SSH key |
-| `TestAccBlockStorage_*` | attach, detach, re-attach, several extra disks, attach on creation | network, SSH key |
+| `TestAccNetwork_*`, `TestAccVPC_*` | isolated network, VM in a new network, VPC, VPC tier with an ACL list, rule and static route | project; optional `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
+| `TestAccVirtualMachine_lifecycle` | create, import, stop and start | SSH key |
+| `TestAccBlockStorage_*` | attach, detach, re-attach, several extra disks, attach on creation | SSH key |
 | `TestAccObjectStorage_basic` | object storage create, import, in-place resize | project |
 | `TestAccVirtualMachine_public`, `TestAccIPAddress_firewall` | public IP, firewall rule | `UZC_TEST_PUBLIC=1`, `UZC_TEST_IP_PLAN` |
 | `TestAccKubernetesCluster_basic` | cluster create, import, optional plan change | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |

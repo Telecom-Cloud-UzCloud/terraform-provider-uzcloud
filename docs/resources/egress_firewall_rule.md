@@ -13,12 +13,14 @@ Manages an egress firewall rule on a UzCloud isolated network. There is no updat
 ## Example Usage
 
 ```terraform
+# Allow HTTPS from the whole network (its CIDR, 10.0.0.0/24 here) to anywhere
 resource "uzc_egress_firewall_rule" "example" {
-  network    = uzc_network.example.slug
-  protocol   = "tcp"
-  cidr_list  = "0.0.0.0/0"
-  start_port = "80"
-  end_port   = "80"
+  network               = uzc_network.example.slug
+  protocol              = "tcp"
+  cidr_list             = "10.0.0.0/24"
+  destination_cidr_list = "0.0.0.0/0"
+  start_port            = "443"
+  end_port              = "443"
 }
 ```
 
@@ -27,13 +29,13 @@ resource "uzc_egress_firewall_rule" "example" {
 
 ### Required
 
-- `cidr_list` (String) Source CIDR block (e.g. "0.0.0.0/0").
+- `cidr_list` (String) Source CIDR block inside the network, or "0.0.0.0/0" for the whole network (UzCloud then stores the network's CIDR).
 - `network` (String) Slug of the uzc_network to attach the rule to.
 - `protocol` (String) One of "tcp", "udp", "icmp", or "all".
 
 ### Optional
 
-- `destination_cidr_list` (String) Destination CIDR block.
+- `destination_cidr_list` (String) Destination CIDR block. UzCloud uses "0.0.0.0/0" when unset.
 - `end_port` (String) Leave unset for protocols that don't use ports.
 - `icmp_code` (String) Used only when protocol is "icmp".
 - `icmp_type` (String) Used only when protocol is "icmp".

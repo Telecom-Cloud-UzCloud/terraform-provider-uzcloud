@@ -25,12 +25,12 @@ resource "uzc_vpn_user" "example" {
 
 ### Required
 
-- `cloud_provider` (String) Cloud provider slug.
 - `password` (String, Sensitive)
 - `username` (String)
 
 ### Optional
 
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.
 

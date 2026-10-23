@@ -34,7 +34,6 @@ resource "uzc_iso" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `image_type` (String) e.g. "Operating System".
 - `name` (String)
 - `operating_system` (String)
@@ -45,6 +44,7 @@ resource "uzc_iso" "example" {
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `description` (String)
 - `is_bootable` (Boolean)
 - `is_extractable` (Boolean)

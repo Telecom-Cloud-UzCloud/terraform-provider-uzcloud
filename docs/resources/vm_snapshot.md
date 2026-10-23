@@ -26,7 +26,6 @@ resource "uzc_vm_snapshot" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `name` (String)
 - `plan` (String) Plan slug (e.g. based on the amount of storage used).
 - `virtual_machine` (String) Slug of the virtual machine to snapshot.
@@ -34,6 +33,7 @@ resource "uzc_vm_snapshot" "example" {
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Defaults to "hourly": snapshots and backups are billed by usage, the API rejects monthly and yearly cycles for them, and the provider-level `billing_cycle` default is therefore not used.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `is_memory` (Boolean) Whether to include memory state in the snapshot.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.

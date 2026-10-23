@@ -23,8 +23,8 @@ resource "uzc_vm_autoscale" "example" {
   network_type            = "Isolated"
   default_network         = uzc_network.example.slug
   networks                = [uzc_network.example.slug]
-  template                = "ubuntu-2204-prod-ssh"
-  plan                    = "box2cm2"
+  template                = "ubuntu-2404"
+  plan                    = "optimal-line-2"
 }
 ```
 
@@ -33,7 +33,6 @@ resource "uzc_vm_autoscale" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `expunge_vm_grace_period` (Number) Seconds.
 - `max_members` (Number)
 - `min_members` (Number)
@@ -47,6 +46,7 @@ resource "uzc_vm_autoscale" "example" {
 - `affinity_groups` (List of String)
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
 - `boot_source` (String) "image" or "snapshot".
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `custom_plan` (Attributes) Custom sizing, as an alternative to `plan`. Mutually exclusive with `plan`; exactly one must be set. Mutable: changing it calls change-plan. (see [below for nested schema](#nestedatt--custom_plan))
 - `default_network` (String)
 - `enabled` (Boolean) Mutable: changing it calls the enable/disable endpoint.

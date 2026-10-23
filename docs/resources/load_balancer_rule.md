@@ -3,21 +3,18 @@
 page_title: "uzc_load_balancer_rule Resource - UzCloud"
 subcategory: ""
 description: |-
-  Adds a rule to an existing UzCloud load balancer. There is no endpoint to delete a single rule, so destroying this resource fails with an error instead of silently drifting from reality. The only supported update is attaching more virtual machines to virtual_machines; every other attribute forces recreation. The resource ID is "{load_balancer}/{rule_id}".
+  Adds a rule to an existing UzCloud load balancer. The virtual machines behind the rule can be changed in place (they are attached and detached); every other attribute forces recreation. The resource ID is "{load_balancer}/{rule_id}".
 ---
 
 # uzc_load_balancer_rule (Resource)
 
-Adds a rule to an existing UzCloud load balancer. There is no endpoint to delete a single rule, so destroying this resource fails with an error instead of silently drifting from reality. The only supported update is attaching more virtual machines to `virtual_machines`; every other attribute forces recreation. The resource ID is "{load_balancer}/{rule_id}".
+Adds a rule to an existing UzCloud load balancer. The virtual machines behind the rule can be changed in place (they are attached and detached); every other attribute forces recreation. The resource ID is "{load_balancer}/{rule_id}".
 
 ## Example Usage
 
 ```terraform
-# There is no endpoint to delete a single load balancer rule, so
-# destroying this resource fails with an error instead of silently
-# drifting from reality. Remove it from state manually with
-# `terraform state rm` once you've confirmed the desired state directly
-# against the UzCloud portal.
+# The machines behind the rule can be changed in place: added ones are
+# attached, removed ones detached.
 resource "uzc_load_balancer_rule" "example" {
   load_balancer  = uzc_load_balancer.example.slug
   name           = "https"
@@ -39,7 +36,6 @@ resource "uzc_load_balancer_rule" "example" {
 ### Required
 
 - `algorithm` (String) e.g. "roundrobin".
-- `cloud_provider` (String) Cloud provider slug, used both at creation and for the attach-VM call.
 - `load_balancer` (String) Slug of the uzc_load_balancer to add the rule to.
 - `name` (String)
 - `private_port` (Number)
@@ -48,12 +44,13 @@ resource "uzc_load_balancer_rule" "example" {
 
 ### Optional
 
+- `cloud_provider` (String) Cloud provider slug, used both at creation and for the attach-VM call. Falls back to the provider's `cloud_provider` default when unset.
 - `enable_proxy_protocol` (Boolean)
 - `enable_tls_protocol` (Boolean)
 - `project` (String) Project slug, used for the attach-VM call. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug, used for the attach-VM call. Falls back to the provider's `region` default when unset.
 - `sticky_method` (String) e.g. "AppCookie".
-- `virtual_machines` (Attributes List) Virtual machines behind this rule. Mutable: adding entries calls the attach endpoint. There is no documented way to remove one. (see [below for nested schema](#nestedatt--virtual_machines))
+- `virtual_machines` (Attributes List) Virtual machines behind this rule. Mutable: added machines are attached, removed ones detached. (see [below for nested schema](#nestedatt--virtual_machines))
 
 ### Read-Only
 

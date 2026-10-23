@@ -17,8 +17,10 @@ resource "uzc_ssh_key" "example" {
   name       = "example-key"
   public_key = file("~/.ssh/id_ed25519.pub")
 
-  # Optional — falls back to the provider's `project` default when unset.
+  # Optional — fall back to the provider's `project` and `region` defaults
+  # when unset. A key belongs to a project and a region.
   project = uzc_project.example.slug
+  region  = "tashkent"
 }
 ```
 
@@ -27,12 +29,13 @@ resource "uzc_ssh_key" "example" {
 
 ### Required
 
-- `name` (String) Name for this SSH key.
+- `name` (String) Name for this SSH key, at most 20 characters.
 - `public_key` (String) The SSH public key content (e.g. the contents of an id_ed25519.pub file).
 
 ### Optional
 
 - `project` (String) Project slug this key belongs to. Falls back to the provider's `project` default when unset.
+- `region` (String) Region slug this key belongs to. Falls back to the provider's `region` default when unset. Changing this forces recreation.
 
 ### Read-Only
 

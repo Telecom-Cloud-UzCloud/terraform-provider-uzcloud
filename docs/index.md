@@ -16,7 +16,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.1.0"
+      version = ">= 1.2.0"
     }
   }
 }
@@ -30,15 +30,18 @@ resource "uzc_project" "example" {
 }
 
 resource "uzc_virtual_machine" "example" {
-  name           = "example-vm"
-  cloud_provider = "nimbo"
-  project        = uzc_project.example.slug
-  region         = "tashkent"
-  billing_cycle  = "hourly"
-  boot_source    = "image"
-  template       = "ubuntu-22-04"
-  plan           = "box2cm2"
-  is_public      = true
+  name              = "example-vm"
+  cloud_provider    = "nimbo"
+  project           = uzc_project.example.slug
+  region            = "tashkent"
+  billing_cycle     = "monthly"
+  boot_source       = "image"
+  template          = "ubuntu-2404"
+  plan              = "optimal-line-2"
+  storage_category  = "ssd-storage" # see the uzc_storage_categories data source
+  blockstorage_plan = "standard-4"  # root disk plan, see uzc_plans with service "Block Storage"
+  network_type      = "Isolated"
+  is_public         = true
 }
 ```
 
@@ -103,20 +106,14 @@ that are worth knowing about before relying on it:
   attribute forces Terraform to destroy and recreate the resource rather
   than update it in place. Each resource's own documentation says which of
   its attributes behave this way.
-- **A few resources can't be deleted or read back through the API at all,
-  and say so loudly.** For example, `uzc_static_nat`, `uzc_vpc_acl_rule`,
-  `uzc_load_balancer_rule`, and `uzc_dns_record` document endpoints the
-  UzCloud API doesn't currently expose (no delete, or no way to safely
-  scope a delete to one record). Rather than silently drifting from
-  reality, these resources fail loudly with instructions to reconcile
-  state manually (`terraform state rm`) once you've confirmed the real
-  state against the UzCloud portal.
-- **Kubernetes clusters have no kubeconfig endpoint.** `uzc_kubernetes_cluster`
-  can provision a cluster, but the UzCloud API currently exposes no way to
-  retrieve its kubeconfig, so this provider can't wire a provisioned
-  cluster up to a Kubernetes or Helm provider in the same run. Fetch the
-  kubeconfig out of band (e.g. the UzCloud portal) until such an endpoint
-  exists.
+- **One resource can't be deleted through the API, and says so loudly.**
+  UzCloud exposes no endpoint to disable a static NAT, so destroying
+  `uzc_static_nat` fails with instructions to reconcile state manually
+  (`terraform state rm`) once you've confirmed the real state against the
+  UzCloud portal, rather than silently drifting from reality.
+- **Kubernetes clusters export their kubeconfig.** `uzc_kubernetes_cluster`
+  has a sensitive `kubeconfig` attribute and the API server `endpoint`, so a
+  `kubernetes` or `helm` provider can use a cluster created in the same run.
 
 ## Example Usage
 
@@ -125,7 +122,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.1.0"
+      version = ">= 1.2.0"
     }
   }
 }

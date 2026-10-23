@@ -2,7 +2,59 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
-## Unreleased
+## 1.2.0 (23 октября 2026)
+
+##### НОВОЕ:
+
+* network: `uzc_network` создаёт подсеть (tier) VPC: `type = "Vpc"` с `vpc`, `gateway` и `netmask`, а `acl_id` применяет один из списков сетевого ACL этого VPC (меняется без пересоздания)
+* network: **Новый ресурс:** `uzc_network_acl_list`, список сетевого ACL в VPC
+* network: **Новый ресурс:** `uzc_network_acl_rule`, правило в списке сетевого ACL, изменяется без пересоздания
+* network: **Новый ресурс:** `uzc_vpc_static_route`, статический маршрут VPC
+* kubernetes: `uzc_kubernetes_cluster` отдаёт `kubeconfig` кластера (секретный атрибут) и адрес API-сервера `endpoint`, поэтому провайдеры `kubernetes` и `helm` могут работать с кластером, созданным в том же запуске
+
+##### УЛУЧШЕНИЯ:
+
+* compute: перед созданием `uzc_virtual_machine` провайдер сверяет `template`, `plan`, `blockstorage_plan`, `storage_category`, `networks` и `ssh_key` с каталогами аккаунта и сообщает о неизвестном slug с ближайшим совпадением и списком допустимых значений (`ubuntu-24-04` подсказывает `ubuntu-2404`), а не передаёт его в API, который отвечает внутренними ошибками вроде «Call to a member function getTable() on null»
+* compute: `server`, `template_type` и `os_family`, если не заданы, по умолчанию равны `cloud-compute`, типу образа шаблона и семейству ОС шаблона, как их заполняет консоль
+* compute: новый атрибут `network_plan` для сети, которую UzCloud создаёт, когда `network_type` равен `Isolated`, а `networks` пуст; если он не задан, берётся основной тариф сети аккаунта (или `isolated`)
+* network: у `uzc_network` появился атрибут `billing_cycle`; если он не задан, берётся `billing_cycle` провайдера, а затем `hourly`
+* compute: если `network_type` не задан, `uzc_virtual_machine` берёт тип сети из `networks`, как это делает консоль; документированное значение теперь `"Vpc"` (`"VPC"` по-прежнему принимается), а подсеть VPC с `network_type = "Isolated"` или обычная сеть с `"Vpc"` отклоняются до запроса на создание
+* compute: у `uzc_ssh_key` появился атрибут `region` (если не задан, берётся `region` провайдера), а `project` и `region` считываются при обновлении состояния и импорте
+* network: `uzc_vpc` ждёт, пока VPC перейдёт в состояние `Enabled`, чтобы сразу после него можно было добавлять подсети, и отправляет `vr_plan`, как консоль
+* kubernetes: изменение `node_size` масштабирует `uzc_kubernetes_cluster` без пересоздания, а запрос на смену тарифа отправляется, только когда изменились тариф или цикл оплаты
+* storage: новый атрибут `size_gb` у `uzc_blockstorage`; большее значение увеличивает диск без пересоздания
+* loadbalancer: виртуальные машины `uzc_load_balancer_rule` теперь можно не только добавлять, но и убирать без пересоздания
+* dns: `uzc_dns_record` меняет `ttl` и `content` без пересоздания, считывает их при обновлении состояния и импортируется как `{domain}/{type}/{name}`
+* compute: имя `uzc_ssh_key` длиннее 20 символов, которое UzCloud отклоняет, отклоняется ещё до запроса на создание
+* network: переименование `uzc_vpc` ждёт новое имя до двух минут: UzCloud применяет его через несколько секунд после того, как принял запрос
+* compute: удаление сети из `networks` у `uzc_virtual_machine` отключает её без пересоздания VM (`POST .../remove-network`)
+
+##### ИСПРАВЛЕНИЯ:
+
+* provider: `cloud_provider` наследуется из блока провайдера, как и описано в документации; раньше он был обязательным во всех вычислительных ресурсах
+* provider: проверки «ровно одно из» (`network`/`vpc` у `uzc_ip_address`, `plan`/`custom_plan`, источники `uzc_template`, тарифы Kubernetes) больше не отвергают значение, известное только после apply, например `network = uzc_network.this.slug`
+* docs: в примерах были несуществующие slug шаблона и тарифа (`ubuntu-22-04`, `box2cm2`) и не было `storage_category` и `blockstorage_plan`; все шесть сценариев теперь проходят `terraform validate`
+* compute: создание VM с `network_type = "Isolated"` без `networks` падало с 422 «The network plan field is required»
+* network: `uzc_network` не отправлял `billing_cycle`: тогда UzCloud отвечал 403 «Что-то пошло не так» и оставлял сеть без идентификатора CloudStack, а её переименование падало с «missing parameter id»; теперь `billing_cycle` отправляется всегда
+* network: `uzc_network` падал с «The network plan field is required», если `network_plan` не задан; теперь используется основной тариф сети аккаунта (или `isolated`)
+* provider: при создании `uzc_network`, `uzc_vpc` и `uzc_load_balancer` отправляется `is_vm_snapshot`, как указано в спецификации API
+* data sources: `uzc_load_balancers` падал, когда API присылал порты или флаги правила строкой
+* compute: создание `uzc_ssh_key` падало с 500 `Attempt to read property "id" on null`: API нужен регион ключа, теперь он отправляется вместе с проектом
+* network: `uzc_egress_firewall_rule` ждал до истечения тайм-аута операции: API не возвращает правило в ответ на создание и называет поля `cidr` и `destcidr_list`; теперь новое правило находится в списке, а порты, которые приходят числом или null, читаются правильно
+* network: `uzc_vpc_acl_rule` при создании ждал до истечения тайм-аута операции (API не возвращает id) и всегда падал при удалении; теперь он находит созданный список и удаляет его
+* provider: ответ CloudStack 403 «entity does not exist» для удалённого объекта считается признаком «не найдено», поэтому удаление и обновление состояния на нём не падают
+* loadbalancer: удаление `uzc_load_balancer_rule` всегда падало; теперь правило удаляется
+* dns: удаление `uzc_dns_record` всегда падало; теперь запись удаляется: провайдер отправляет её в том виде, в каком её возвращает домен, как это делает консоль
+* network: создание `uzc_network` падало с «cannot unmarshal number into ... is_default of type bool»: ответ на создание присылает флаги сети числами
+* network: переименование `uzc_network` падало с «cannot unmarshal array»: в ответе нет сети, теперь она считывается заново, когда новое имя применится
+* loadbalancer: добавление `uzc_load_balancer_rule` к существующему балансировщику отвечало 403 «Что-то пошло не так»: теперь, как в консоли, отправляются настройки проверки доступности и `ipaddress` машин
+* compute: VM с несколькими сетями в `networks` выдавала «Provider produced inconsistent result», потому что UzCloud возвращает их в другом порядке; теперь сохраняется порядок из конфигурации
+* network: удаление `uzc_network` сразу после её последней VM повторяется, пока UzCloud отвечает «You cannot delete the network while virtual machines are created using it»
+* network: `uzc_vpc_static_route`, запрошенный сразу после создания подсети, UzCloud принимает, но не создаёт; если маршрут не появился за минуту, запрос отправляется повторно
+
+##### УСТАРЕЛО:
+
+* network: `uzc_vpc_acl_rule` устарел: несмотря на название, он управляет списком сетевого ACL, а не правилом. Используйте `uzc_network_acl_list` (`rule_id` становится `acl_id`) и `uzc_network_acl_rule`
 
 ## 1.1.0 (16 октября 2026)
 

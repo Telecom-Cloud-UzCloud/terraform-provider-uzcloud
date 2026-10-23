@@ -21,13 +21,15 @@ resource "uzc_virtual_machine" "example" {
   # the provider's defaults when unset. Set them explicitly to override.
   project       = uzc_project.example.slug
   region        = "tashkent"
-  billing_cycle = "hourly"
+  billing_cycle = "monthly"
 
   boot_source = "image"
-  template    = "ubuntu-22-04"
+  template    = "ubuntu-2404"
 
   # Exactly one of `plan` or `custom_plan` must be set.
-  plan = "box2cm2"
+  plan              = "optimal-line-2"
+  storage_category  = "ssd-storage" # see the uzc_storage_categories data source
+  blockstorage_plan = "standard-4"  # root disk plan, see uzc_plans with service "Block Storage"
   # custom_plan {
   #   cpu     = 2
   #   memory  = 2048
@@ -37,7 +39,8 @@ resource "uzc_virtual_machine" "example" {
   is_public = true
   ssh_key   = uzc_ssh_key.example.slug
 
-  networks = ["default-network"]
+  network_type = "Isolated"
+  networks     = [uzc_network.example.slug]
 
   user_data = <<-EOT
     #!/bin/bash
@@ -55,7 +58,6 @@ resource "uzc_virtual_machine" "example" {
 
 ### Required
 
-- `cloud_provider` (String) Cloud provider slug (e.g. "nimbo"). Changing this forces recreation.
 - `name` (String) Name of the virtual machine. Mutable: changing it calls change-label.
 
 ### Optional
@@ -63,11 +65,12 @@ resource "uzc_virtual_machine" "example" {
 - `additional_options` (List of String) Extra provisioning options (e.g. ["monitoring"]). Changing this forces recreation.
 - `addons` (Attributes List) Addons purchased alongside the VM. Changing this forces recreation (no update endpoint is documented). (see [below for nested schema](#nestedatt--addons))
 - `billing_cycle` (String) Billing cycle slug (e.g. "hourly", "monthly"). Falls back to the provider's `billing_cycle` default when unset. Mutable: changing it calls change-plan.
-- `blockstorage_plan` (String) Changing this forces recreation.
+- `blockstorage_plan` (String) Block storage plan for the root disk (e.g. "standard-4", see the uzc_plans data source with service "Block Storage"). Required by the UzCloud API for image-based VMs. Changing this forces recreation.
 - `blockstorage_snapshot` (String) Changing this forces recreation.
 - `boot_mode` (String) Changing this forces recreation.
 - `boot_source` (String) One of "image", "iso", or "snapshot". Changing this forces recreation.
 - `boot_type` (String) Changing this forces recreation.
+- `cloud_provider` (String) Cloud provider slug (e.g. "nimbo"). Falls back to the provider's `cloud_provider` default when unset. Changing this forces recreation.
 - `compute_category` (String) Compute category slug. Changing this forces recreation.
 - `create_timeout_minutes` (Number) Minutes to wait for the VM to reach state Running after creation.
 - `custom_plan` (Attributes) Custom sizing, as an alternative to `plan`. Mutually exclusive with `plan`; exactly one must be set. Mutable: changing it calls change-plan. (see [below for nested schema](#nestedatt--custom_plan))
@@ -79,19 +82,20 @@ resource "uzc_virtual_machine" "example" {
 - `is_public` (Boolean) Whether the VM gets a public IP. Changing this forces recreation.
 - `is_vm_password_required` (Boolean) Changing this forces recreation.
 - `is_vm_ssh_required` (Boolean) Changing this forces recreation.
-- `network_type` (String) One of "Isolated", "Shared", "VPC", or "L2". Changing this forces recreation.
-- `networks` (List of String) Network slugs attached to this VM. Entries can be ADDED in place (calls add-network); UzCloud has no remove-network endpoint, so removing an entry forces recreation.
-- `os_family` (String) OS family (e.g. "Linux", "Windows"). Changing this forces recreation.
+- `network_plan` (String) Plan of the isolated network UzCloud creates for the VM when `network_type` is "Isolated" and `networks` is empty (see the uzc_plans data source with service "Network"). Defaults to the account's default network plan, or "isolated". Changing this forces recreation.
+- `network_type` (String) One of "Isolated", "Shared", "Vpc" ("VPC" is accepted too), or "L2". When unset and `networks` is set, the type of the first network is used, the way the UzCloud console does; a VM in a VPC goes into one of its tiers (a `uzc_network` with type "Vpc"). Changing this forces recreation.
+- `networks` (List of String) Network slugs attached to this VM. Mutable: added networks are attached and removed ones detached, without recreating the VM. The VM must keep at least one network.
+- `os_family` (String) OS family (e.g. "Linux", "Windows"). Defaults to the template's operating system family when unset. Changing this forces recreation.
 - `password` (String, Sensitive) OS login password. Mutable: changing it calls change-password.
 - `plan` (String) Plan slug (e.g. "box2cm2"). Mutually exclusive with `custom_plan`; exactly one must be set. Mutable: changing it calls change-plan.
 - `power_state` (String) Desired power state: "running" or "stopped". Mutable: changing it calls start/stop.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset. Changing this forces recreation.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset. Changing this forces recreation.
-- `server` (String) Server/compute offering group slug (e.g. "cloud-compute"). Changing this forces recreation.
+- `server` (String) Server/compute offering group slug. Defaults to "cloud-compute" when unset. Changing this forces recreation.
 - `ssh_key` (String) SSH key slug to inject at boot. Changing this forces recreation.
-- `storage_category` (String) Storage category slug (e.g. "ssd-storage"). Changing this forces recreation.
+- `storage_category` (String) Storage category slug (e.g. "ssd-storage", see the uzc_storage_categories data source). Required by the UzCloud API. Changing this forces recreation.
 - `template` (String) Template slug to boot from. UzCloud's change-template endpoint REINSTALLS THE OPERATING SYSTEM (destroying data on the root disk); this provider always forces recreation on a template change rather than risking an unintended in-place reinstall.
-- `template_type` (String) Template type (e.g. "Operating System"). Changing this forces recreation.
+- `template_type` (String) Template type (e.g. "Operating System"). Defaults to the template's image type when unset. Changing this forces recreation.
 - `update_timeout_minutes` (Number) Minutes to wait for plan-change / power-state operations to settle.
 - `user_data` (String) Cloud-init/startup script, run once on first boot. Mutable: changing it calls change-startup-script.
 - `virtual_machine_snapshot` (String) Source VM-snapshot slug, when `boot_source = "snapshot"`. Changing this forces recreation.

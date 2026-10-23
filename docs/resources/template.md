@@ -38,7 +38,6 @@ resource "uzc_template" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `image_type` (String) e.g. "Operating System".
 - `name` (String)
 - `operating_system` (String)
@@ -51,6 +50,7 @@ resource "uzc_template" "example" {
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
 - `blockstorage` (String) Source: slug of an existing uzc_blockstorage volume. Exactly one source field must be set.
 - `blockstorage_snapshot` (String) Source: slug of an existing uzc_blockstorage_snapshot. Exactly one source field must be set.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `description` (String)
 - `format` (String) Image format (e.g. "QCOW2"), used with `url`.
 - `hypervisor` (String)

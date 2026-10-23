@@ -16,8 +16,12 @@ Manages a UzCloud block storage volume. There is no update endpoint, so changing
 resource "uzc_blockstorage" "example" {
   name             = "example-volume"
   cloud_provider   = "nimbo"
-  storage_category = "nvme"
-  plan             = "large"
+  storage_category = "ssd-storage"
+  plan             = "standard-4"
+
+  # Optional: grow the volume beyond the plan's size, in place. A volume
+  # cannot shrink.
+  size_gb = 100
 }
 ```
 
@@ -26,7 +30,6 @@ resource "uzc_blockstorage" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `name` (String)
 - `plan` (String) Plan slug. Ignored when `is_custom_plan` is true.
 - `storage_category` (String) Storage category slug (e.g. ssd-storage, hdd-storage, nvme).
@@ -34,11 +37,13 @@ resource "uzc_blockstorage" "example" {
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `custom_plan` (String) Custom plan definition, used when `is_custom_plan` is true.
 - `is_custom_plan` (Boolean)
 - `is_free_trial_plan` (Boolean)
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.
+- `size_gb` (Number) Size of the volume in GB. Defaults to the size of the plan. Setting a larger value grows the volume in place; a volume cannot shrink.
 - `virtual_machine` (String) Slug of a virtual machine to attach this volume to on creation. Mutually exclusive with managing the attachment through a separate uzc_blockstorage_attachment resource, use one or the other, never both, for the same volume.
 
 ### Read-Only

@@ -2,7 +2,59 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
-## Unreleased
+## 1.2.0 (2026-yil 23-oktabr)
+
+##### YANGI IMKONIYATLAR:
+
+* network: `uzc_network` VPC quyi tarmog'ini (tier) yaratadi: `type = "Vpc"` bilan `vpc`, `gateway` va `netmask`, `acl_id` esa shu VPC tarmoq ACL ro'yxatlaridan birini qo'llaydi (qayta yaratmasdan o'zgaradi)
+* network: **Yangi resurs:** `uzc_network_acl_list`, VPC tarmoq ACL ro'yxati
+* network: **Yangi resurs:** `uzc_network_acl_rule`, tarmoq ACL ro'yxatidagi qoida, qayta yaratmasdan o'zgaradi
+* network: **Yangi resurs:** `uzc_vpc_static_route`, VPC statik marshruti
+* kubernetes: `uzc_kubernetes_cluster` klasterning `kubeconfig`ini (maxfiy atribut) va API server manzili `endpoint`ni beradi, shuning uchun `kubernetes` va `helm` provayderlari shu ishga tushirishda yaratilgan klaster bilan ishlay oladi
+
+##### YAXSHILANISHLAR:
+
+* compute: `uzc_virtual_machine` yaratishdan oldin provayder `template`, `plan`, `blockstorage_plan`, `storage_category`, `networks` va `ssh_key`ni akkaunt kataloglari bilan solishtiradi va noma'lum slug haqida eng yaqin moslik hamda ruxsat etilgan qiymatlar ro'yxati bilan xabar beradi (`ubuntu-24-04` `ubuntu-2404`ni taklif qiladi), uni «Call to a member function getTable() on null» kabi ichki xatolar bilan javob beradigan API'ga yubormaydi
+* compute: `server`, `template_type` va `os_family` belgilanmagan bo'lsa, konsoldagi kabi standart holatda `cloud-compute`, shablonning image turi va shablonning OT oilasiga teng bo'ladi
+* compute: `network_type` `Isolated` bo'lib, `networks` bo'sh bo'lganda UzCloud yaratadigan tarmoq uchun yangi `network_plan` atributi; belgilanmagan bo'lsa, akkauntning asosiy tarmoq tarifi (yoki `isolated`) ishlatiladi
+* network: `uzc_network`da `billing_cycle` atributi paydo bo'ldi; belgilanmagan bo'lsa, provayderning `billing_cycle`i, so'ng `hourly` olinadi
+* compute: `network_type` belgilanmagan bo'lsa, `uzc_virtual_machine` konsoldagi kabi `networks`dagi tarmoq turini oladi; hujjatlashtirilgan qiymat endi `"Vpc"` (`"VPC"` hamon qabul qilinadi), `network_type = "Isolated"` bilan VPC quyi tarmog'i yoki `"Vpc"` bilan oddiy tarmoq yaratish so'rovidan oldin rad etiladi
+* compute: `uzc_ssh_key`da `region` atributi paydo bo'ldi (belgilanmagan bo'lsa, provayderning `region`i olinadi), `project` va `region` holatni yangilash va import qilishda o'qiladi
+* network: `uzc_vpc` VPC `Enabled` holatiga o'tishini kutadi, shunda undan keyin darhol quyi tarmoqlar qo'shish mumkin, va konsoldagi kabi `vr_plan` yuboradi
+* kubernetes: `node_size`ni o'zgartirish `uzc_kubernetes_cluster`ni qayta yaratmasdan masshtablaydi, tarifni o'zgartirish so'rovi esa faqat tarif yoki to'lov davri o'zgarganda yuboriladi
+* storage: `uzc_blockstorage`da yangi `size_gb` atributi; kattaroq qiymat diskni qayta yaratmasdan kattalashtiradi
+* loadbalancer: `uzc_load_balancer_rule` virtual mashinalarini endi qayta yaratmasdan nafaqat qo'shish, balki olib tashlash ham mumkin
+* dns: `uzc_dns_record` `ttl` va `content`ni qayta yaratmasdan o'zgartiradi, holatni yangilashda ularni o'qiydi va `{domain}/{type}/{name}` sifatida import qilinadi
+* compute: UzCloud rad etadigan 20 belgidan uzun `uzc_ssh_key` nomi yaratish so'rovidan oldin rad etiladi
+* network: `uzc_vpc`ni qayta nomlash yangi nomni ikki daqiqagacha kutadi: UzCloud uni so'rovni qabul qilgandan bir necha soniya o'tib qo'llaydi
+* compute: `uzc_virtual_machine`ning `networks`idan tarmoqni olib tashlash uni VM'ni qayta yaratmasdan uzadi (`POST .../remove-network`)
+
+##### TUZATISHLAR:
+
+* provider: `cloud_provider` hujjatlarda yozilganidek provayder blokidan meros qilib olinadi; ilgari u barcha hisoblash resurslarida majburiy edi
+* provider: «faqat bittasi» tekshiruvlari (`uzc_ip_address`dagi `network`/`vpc`, `plan`/`custom_plan`, `uzc_template` manbalari, Kubernetes tariflari) endi faqat apply'dan keyin ma'lum bo'ladigan qiymatni, masalan `network = uzc_network.this.slug`ni rad etmaydi
+* docs: misollarda mavjud bo'lmagan shablon va tarif slug'lari (`ubuntu-22-04`, `box2cm2`) bor edi, `storage_category` va `blockstorage_plan` esa yo'q edi; endi oltita stsenariyning barchasi `terraform validate`dan o'tadi
+* compute: `network_type = "Isolated"` va `networks`siz VM yaratish 422 «The network plan field is required» bilan to'xtardi
+* network: `uzc_network` `billing_cycle` yubormasdi: shunda UzCloud 403 «Something went wrong» bilan javob berib, CloudStack identifikatorisiz tarmoq qoldirardi, uni qayta nomlash esa «missing parameter id» bilan to'xtardi; endi `billing_cycle` har doim yuboriladi
+* network: `network_plan` belgilanmaganda `uzc_network` «The network plan field is required» bilan to'xtardi; endi akkauntning asosiy tarmoq tarifi (yoki `isolated`) ishlatiladi
+* provider: `uzc_network`, `uzc_vpc` va `uzc_load_balancer` yaratishda API spetsifikatsiyasida ko'rsatilganidek `is_vm_snapshot` yuboriladi
+* data sources: API qoida portlari yoki bayroqlarini satr ko'rinishida yuborganda `uzc_load_balancers` to'xtardi
+* compute: `uzc_ssh_key` yaratish 500 `Attempt to read property "id" on null` bilan to'xtardi: API'ga kalit hududi kerak, endi u loyiha bilan birga yuboriladi
+* network: `uzc_egress_firewall_rule` amal taym-auti tugaguncha kutardi: API yaratish javobida qoidani qaytarmaydi va maydonlarni `cidr` hamda `destcidr_list` deb nomlaydi; endi yangi qoida ro'yxatdan topiladi, son yoki null ko'rinishida keladigan portlar to'g'ri o'qiladi
+* network: `uzc_vpc_acl_rule` yaratishda amal taym-auti tugaguncha kutardi (API id qaytarmaydi) va o'chirishda har doim to'xtardi; endi u yaratilgan ro'yxatni topadi va o'chiradi
+* provider: o'chirilgan obyekt uchun CloudStack'ning 403 «entity does not exist» javobi «topilmadi» deb hisoblanadi, shuning uchun o'chirish va holatni yangilash undan to'xtamaydi
+* loadbalancer: `uzc_load_balancer_rule`ni o'chirish har doim to'xtardi; endi qoida o'chiriladi
+* dns: `uzc_dns_record`ni o'chirish har doim to'xtardi; endi yozuv o'chiriladi: provayder uni konsoldagi kabi domen qaytargan ko'rinishda yuboradi
+* network: `uzc_network` yaratish «cannot unmarshal number into ... is_default of type bool» bilan to'xtardi: yaratish javobi tarmoq bayroqlarini son ko'rinishida yuboradi
+* network: `uzc_network`ni qayta nomlash «cannot unmarshal array» bilan to'xtardi: javobda tarmoq yo'q, endi yangi nom qo'llanganda u qayta o'qiladi
+* loadbalancer: mavjud load balancerga `uzc_load_balancer_rule` qo'shish 403 «Something went wrong» bilan javob berardi: endi konsoldagi kabi holat tekshiruvi sozlamalari va mashinalarning `ipaddress`i yuboriladi
+* compute: bir nechta `networks`li VM «Provider produced inconsistent result» ko'rsatardi, chunki UzCloud ularni boshqa tartibda qaytaradi; endi konfiguratsiyadagi tartib saqlanadi
+* network: oxirgi VM'dan keyin darhol `uzc_network`ni o'chirish UzCloud «You cannot delete the network while virtual machines are created using it» deb javob berguncha qayta uriniladi
+* network: yangi quyi tarmoqdan keyin darhol so'ralgan `uzc_vpc_static_route`ni UzCloud qabul qiladi, lekin yaratmaydi; marshrut bir daqiqada paydo bo'lmasa, so'rov qayta yuboriladi
+
+##### ESKIRGAN:
+
+* network: `uzc_vpc_acl_rule` eskirgan: nomiga qaramay, u qoidani emas, tarmoq ACL ro'yxatini boshqaradi. `uzc_network_acl_list` (`rule_id` `acl_id`ga aylanadi) va `uzc_network_acl_rule`dan foydalaning
 
 ## 1.1.0 (2026-yil 16-oktabr)
 

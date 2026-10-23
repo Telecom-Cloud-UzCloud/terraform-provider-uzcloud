@@ -29,13 +29,13 @@ resource "uzc_blockstorage_backup" "example" {
 
 - `at` (Number) Hour of day the backup runs at (e.g. 1 for 1am), per `interval`.
 - `blockstorage` (String) Slug of the uzc_blockstorage volume to back up.
-- `cloud_provider` (String)
 - `interval` (String) e.g. "dailyAt".
 - `plan` (String) Plan slug, usually based on GB usage.
 
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Defaults to "hourly": snapshots and backups are billed by usage, the API rejects monthly and yearly cycles for them, and the provider-level `billing_cycle` default is therefore not used.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `immediate` (Boolean) Whether to also run the first backup immediately.
 - `is_vm_password_required` (Boolean) Whether a password is required to access the backed-up virtual machine.
 - `is_vm_ssh_required` (Boolean) Whether SSH access is required for the backed-up virtual machine.

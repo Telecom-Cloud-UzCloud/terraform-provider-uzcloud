@@ -3,23 +3,35 @@
 page_title: "uzc_network Resource - UzCloud"
 subcategory: ""
 description: |-
-  Manages a UzCloud isolated/L2 network.
+  Manages a UzCloud network: an isolated or L2 network, or a tier (subnet) of a VPC.
 ---
 
 # uzc_network (Resource)
 
-Manages a UzCloud isolated/L2 network.
+Manages a UzCloud network: an isolated or L2 network, or a tier (subnet) of a VPC.
 
 ## Example Usage
 
 ```terraform
+# An isolated network. network_plan defaults to the account's network plan
+# and billing_cycle to the provider's billing_cycle (or "hourly")
 resource "uzc_network" "example" {
-  cloud_provider = "nimbo"
-  name           = "example-network"
-  type           = "Isolated"
-  network_plan   = "network-1"
-  gateway        = "10.0.0.1"
-  netmask        = "255.255.255.0"
+  name    = "example-network"
+  type    = "Isolated"
+  gateway = "10.0.0.1"
+  netmask = "255.255.255.0"
+}
+
+# A tier (subnet) of a VPC: type "Vpc", the VPC's slug, and a gateway and
+# netmask inside the VPC's CIDR. acl_id applies one of the VPC's network ACL
+# lists; UzCloud applies default_allow when it is unset
+resource "uzc_network" "app" {
+  name    = "app"
+  type    = "Vpc"
+  vpc     = uzc_vpc.example.slug
+  gateway = "10.10.1.1"
+  netmask = "255.255.255.0"
+  acl_id  = uzc_network_acl_list.app.acl_id
 }
 ```
 
@@ -28,20 +40,23 @@ resource "uzc_network" "example" {
 
 ### Required
 
-- `cloud_provider` (String) Cloud provider slug. Changing this forces recreation.
 - `name` (String) Name of the network. Mutable.
-- `type` (String) One of "Isolated" or "L2". Changing this forces recreation.
+- `type` (String) One of "Isolated", "L2" or "Vpc" (a tier of the VPC named by `vpc`). Changing this forces recreation.
 
 ### Optional
 
+- `acl_id` (String) ID of the VPC's network ACL list applied to this tier (see `uzc_network_acl_list`). Only for a VPC tier; UzCloud applies `default_allow` when unset. Mutable.
+- `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default, then to "hourly", when unset. Changing this forces recreation.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset. Changing this forces recreation.
 - `description` (String) Changing this forces recreation (the update endpoint does not accept it).
 - `force_change_cidr` (Boolean) Whether to force the guest VM CIDR change even if it would disrupt existing VMs.
-- `gateway` (String) Default gateway IP address. Changing this forces recreation.
+- `gateway` (String) Default gateway IP address. Required for a VPC tier, where it must lie in the VPC's CIDR. Changing this forces recreation.
 - `guest_vm_cidr` (String) CIDR block assigned to guest VMs on this network. Mutable — changing it calls the update endpoint.
-- `netmask` (String) Subnet mask. Changing this forces recreation.
-- `network_plan` (String) Network plan slug. Changing this forces recreation.
+- `netmask` (String) Subnet mask, e.g. "255.255.255.0". Required for a VPC tier. Changing this forces recreation.
+- `network_plan` (String) Network plan slug (see the uzc_plans data source with service "Network"). Defaults to the account's default network plan, or "isolated". Not used for a VPC tier. Changing this forces recreation.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset. Changing this forces recreation.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset. Changing this forces recreation.
+- `vpc` (String) Slug of the VPC this network is a tier of. Required when `type` is "Vpc". Changing this forces recreation.
 
 ### Read-Only
 

@@ -34,10 +34,13 @@ Registry-адрес провайдера: `telecom-cloud-uzcloud/uzcloud`.
 
 **Сеть**
 
-* [uzc_network](docs/resources/network.md) - изолированная или L2-сеть;
+* [uzc_network](docs/resources/network.md) - изолированная или L2-сеть либо подсеть (tier) VPC;
 * [uzc_vpc](docs/resources/vpc.md) - сеть VPC;
 * [uzc_vpc_restart](docs/resources/vpc_restart.md) - перезапуск сети VPC;
-* [uzc_vpc_acl_rule](docs/resources/vpc_acl_rule.md) - правило сетевого ACL на VPC;
+* [uzc_network_acl_list](docs/resources/network_acl_list.md) - список сетевого ACL в VPC, применяется к подсетям;
+* [uzc_network_acl_rule](docs/resources/network_acl_rule.md) - правило в списке сетевого ACL;
+* [uzc_vpc_static_route](docs/resources/vpc_static_route.md) - статический маршрут VPC;
+* [uzc_vpc_acl_rule](docs/resources/vpc_acl_rule.md) - устарел: управляет списком ACL, используйте `uzc_network_acl_list`;
 * [uzc_virtual_router](docs/resources/virtual_router.md) - виртуальный маршрутизатор;
 * [uzc_ip_address](docs/resources/ip_address.md) - публичный или приватный IP-адрес;
 * [uzc_static_nat](docs/resources/static_nat.md) - статический NAT с IP-адреса на виртуальную машину;
@@ -106,7 +109,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.1.0"
+      version = ">= 1.2.0"
     }
   }
 }
@@ -153,11 +156,14 @@ resource "uzc_virtual_machine" "example" {
   cloud_provider = "nimbo"
   project        = uzc_project.example.slug
   region         = "tashkent"
-  billing_cycle  = "hourly"
+  billing_cycle  = "monthly"
 
-  boot_source = "image"
-  template    = "ubuntu-22-04"
-  plan        = "box2cm2"
+  boot_source       = "image"
+  template          = "ubuntu-2404"
+  plan              = "optimal-line-2"
+  storage_category  = "ssd-storage" # see the uzc_storage_categories data source
+  blockstorage_plan = "standard-4"  # root disk plan, see uzc_plans with service "Block Storage"
+  network_type      = "Isolated"
 
   is_public = true
   ssh_key   = uzc_ssh_key.example.slug
@@ -203,7 +209,7 @@ Acceptance-тесты прогоняют полный жизненный цик�
 export TF_ACC=1
 export UZC_API_TOKEN=<api-token>
 export UZC_TEST_PROJECT=<existing-project-slug>
-export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # for tests that create a VM
+export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # необязательно: без него у каждой тестовой VM своя сеть
 export UZC_TEST_SSH_KEY=<existing-ssh-key-slug>            # for tests that create a VM
 
 make testacc
@@ -229,9 +235,9 @@ TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
 | --- | --- | --- |
 | `TestAccDataSources_*` | все датасорсы без аргументов, тарифы, поиск по slug | проект |
 | `TestAccSSHKey_basic`, `TestAccProject_basic` | создание, импорт, переименование | проект |
-| `TestAccNetwork_*`, `TestAccVPC_*` | изолированная сеть, VM в новой сети, VPC | проект; опционально `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
-| `TestAccVirtualMachine_lifecycle` | создание, импорт, переименование на месте, остановка и запуск | сеть, SSH-ключ |
-| `TestAccBlockStorage_*` | подключение, отключение, повторное подключение, несколько дополнительных дисков, подключение при создании | сеть, SSH-ключ |
+| `TestAccNetwork_*`, `TestAccVPC_*` | изолированная сеть, VM в новой сети, VPC, подсеть VPC со списком ACL, правилом и статическим маршрутом | проект; опционально `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
+| `TestAccVirtualMachine_lifecycle` | создание, импорт, остановка и запуск | SSH-ключ |
+| `TestAccBlockStorage_*` | подключение, отключение, повторное подключение, несколько дополнительных дисков, подключение при создании | SSH-ключ |
 | `TestAccObjectStorage_basic` | создание объектного хранилища, импорт, изменение размера на месте | проект |
 | `TestAccVirtualMachine_public`, `TestAccIPAddress_firewall` | публичный IP, правило файрвола | `UZC_TEST_PUBLIC=1`, `UZC_TEST_IP_PLAN` |
 | `TestAccKubernetesCluster_basic` | создание кластера, импорт, опциональная смена тарифа | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |

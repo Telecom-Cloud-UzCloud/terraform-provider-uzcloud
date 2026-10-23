@@ -28,7 +28,6 @@ resource "uzc_vm_backup" "example" {
 ### Required
 
 - `at` (Number) Hour of day the backup runs at (e.g. 1 for 1am), per `interval`.
-- `cloud_provider` (String)
 - `interval` (String) e.g. "dailyAt".
 - `plan` (String) Plan slug, usually based on GB usage.
 - `virtual_machine` (String) Slug of the virtual machine to back up.
@@ -36,6 +35,7 @@ resource "uzc_vm_backup" "example" {
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Defaults to "hourly": snapshots and backups are billed by usage, the API rejects monthly and yearly cycles for them, and the provider-level `billing_cycle` default is therefore not used.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `immediate` (Boolean) Whether to also run the first backup immediately.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.

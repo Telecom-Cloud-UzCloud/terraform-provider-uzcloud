@@ -2,7 +2,59 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
-## Unreleased
+## 1.2.0 (October 23, 2026)
+
+##### FEATURES:
+
+* network: `uzc_network` creates a tier (subnet) of a VPC: `type = "Vpc"` with `vpc`, `gateway` and `netmask`, and `acl_id` to apply one of the VPC's network ACL lists (changed in place)
+* network: **New Resource:** `uzc_network_acl_list`, a network ACL list of a VPC
+* network: **New Resource:** `uzc_network_acl_rule`, a rule in a network ACL list, updated in place
+* network: **New Resource:** `uzc_vpc_static_route`, a static route of a VPC
+* kubernetes: `uzc_kubernetes_cluster` exports the cluster's `kubeconfig` (sensitive) and API server `endpoint`, so the `kubernetes` and `helm` providers can use a cluster created in the same run
+
+##### ENHANCEMENTS:
+
+* compute: before creating a `uzc_virtual_machine` the provider checks `template`, `plan`, `blockstorage_plan`, `storage_category`, `networks` and `ssh_key` against the account's catalogs and reports an unknown slug with the closest match and the valid values (`ubuntu-24-04` suggests `ubuntu-2404`), instead of passing it to the API, which answers with internal errors such as "Call to a member function getTable() on null"
+* compute: `server`, `template_type` and `os_family` default to `cloud-compute`, the template's image type and the template's operating system family when unset, the way the console fills them in
+* compute: new `network_plan` attribute for the network UzCloud creates when `network_type` is `Isolated` and `networks` is empty; when unset, the account's default network plan (or `isolated`) is used
+* network: `uzc_network` has a `billing_cycle` attribute; it falls back to the provider's `billing_cycle`, then to `hourly`
+* compute: when `network_type` is unset, `uzc_virtual_machine` uses the type of the network in `networks`, the way the console does; `"Vpc"` is the documented value (`"VPC"` is still accepted), and a VPC tier with `network_type = "Isolated"` or an ordinary network with `"Vpc"` is reported before the create request
+* compute: `uzc_ssh_key` has a `region` attribute (from the provider's `region` when unset), and `project` and `region` are read back on refresh and import
+* network: `uzc_vpc` waits until the VPC is `Enabled`, so tiers can be added right after it, and sends `vr_plan` like the console
+* kubernetes: changing `node_size` scales `uzc_kubernetes_cluster` in place instead of recreating it, and the plan change request is only sent when the plan or billing cycle changed
+* storage: new `size_gb` attribute on `uzc_blockstorage`; a larger value grows the volume in place
+* loadbalancer: the virtual machines of a `uzc_load_balancer_rule` can be removed as well as added, in place
+* dns: `uzc_dns_record` changes `ttl` and `content` in place, reads them back on refresh, and can be imported as `{domain}/{type}/{name}`
+* compute: a `uzc_ssh_key` name longer than 20 characters, which UzCloud rejects, is reported before the create request
+* network: renaming a `uzc_vpc` waits up to two minutes for the new name, which UzCloud applies a few seconds after accepting the request
+* compute: removing a network from `networks` of `uzc_virtual_machine` detaches it in place (`POST .../remove-network`) instead of recreating the VM
+
+##### BUG FIXES:
+
+* provider: `cloud_provider` is inherited from the provider block as documented; it was required on every compute resource
+* provider: "exactly one of" checks (`uzc_ip_address` `network`/`vpc`, `plan`/`custom_plan`, `uzc_template` sources, Kubernetes plans) no longer reject a value that is only known after apply, such as `network = uzc_network.this.slug`
+* docs: the examples used template and plan slugs that do not exist (`ubuntu-22-04`, `box2cm2`) and omitted `storage_category` and `blockstorage_plan`; all six example stacks now pass `terraform validate`
+* compute: creating a VM with `network_type = "Isolated"` and no `networks` failed with 422 "The network plan field is required"
+* network: `uzc_network` sent no `billing_cycle`: UzCloud then answered 403 "Something went wrong" and left a network without a CloudStack id, which failed to rename with "missing parameter id"; `billing_cycle` is now always sent
+* network: `uzc_network` failed with "The network plan field is required" when `network_plan` was unset; the account's default network plan (or `isolated`) is now used
+* provider: `is_vm_snapshot` is sent on `uzc_network`, `uzc_vpc` and `uzc_load_balancer` creation, as the API spec lists it
+* data sources: `uzc_load_balancers` failed when the API sent a rule's ports or flags as strings
+* compute: creating a `uzc_ssh_key` failed with 500 `Attempt to read property "id" on null`: the API needs the key's region, which is now sent along with the project
+* network: `uzc_egress_firewall_rule` waited until the operation timeout: the API returns no rule from the create request and names the fields `cidr` and `destcidr_list`; the new rule is now found in the list, and ports reported as numbers or null are read correctly
+* network: `uzc_vpc_acl_rule` waited until the operation timeout on create (the API returns no id) and always failed on destroy; it now finds the new list and deletes it
+* provider: CloudStack's 403 "entity does not exist" for a deleted object is treated as not found, so destroys and refreshes do not fail on it
+* loadbalancer: destroying a `uzc_load_balancer_rule` always failed; the rule is now deleted
+* dns: destroying a `uzc_dns_record` always failed; the record is now deleted by sending it, as the domain lists it, the way the console does
+* network: creating a `uzc_network` failed with "cannot unmarshal number into ... is_default of type bool": the create response sends the network's flags as numbers
+* network: renaming a `uzc_network` failed with "cannot unmarshal array": the response carries no network, which is now read back once the new name is applied
+* loadbalancer: adding a `uzc_load_balancer_rule` to an existing load balancer answered 403 "Something went wrong": the health monitor settings and the machines' `ipaddress` are now sent like the console does
+* compute: a VM with several `networks` showed "Provider produced inconsistent result" because UzCloud lists them in another order; the configured order is kept
+* network: deleting a `uzc_network` right after its last VM is retried while UzCloud still answers "You cannot delete the network while virtual machines are created using it"
+* network: a `uzc_vpc_static_route` requested right after a new tier is accepted by UzCloud but never created; the request is re-sent when the route has not appeared after a minute
+
+##### DEPRECATIONS:
+
+* network: `uzc_vpc_acl_rule` is deprecated: despite its name it manages a network ACL list, not a rule. Use `uzc_network_acl_list` (`rule_id` becomes `acl_id`) and `uzc_network_acl_rule`
 
 ## 1.1.0 (October 16, 2026)
 

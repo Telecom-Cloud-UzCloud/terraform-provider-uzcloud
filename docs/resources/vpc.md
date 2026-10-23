@@ -28,7 +28,6 @@ resource "uzc_vpc" "example" {
 ### Required
 
 - `cidr` (String) Network address of the VPC, e.g. `10.0.0.0`; the prefix length goes in `size`. A full CIDR such as `10.0.0.0/16` is also accepted, as long as its prefix length equals `size`. Changing this forces recreation.
-- `cloud_provider` (String) Cloud provider slug. Changing this forces recreation.
 - `name` (String) Name of the VPC. Mutable.
 - `plan` (String) Plan slug. Changing this forces recreation.
 - `size` (Number) Prefix length of the VPC network, e.g. `16` for `10.0.0.0/16`. Changing this forces recreation.
@@ -36,6 +35,7 @@ resource "uzc_vpc" "example" {
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset. Changing this forces recreation.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset. Changing this forces recreation.
 - `description` (String) Changing this forces recreation (the update endpoint does not accept it).
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset. Changing this forces recreation.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset. Changing this forces recreation.

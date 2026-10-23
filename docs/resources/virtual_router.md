@@ -26,13 +26,13 @@ resource "uzc_virtual_router" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `name` (String)
 - `plan` (String)
 
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `description` (String)
 - `enable_nat` (Boolean)
 - `networks` (List of String) Network slugs attached to this virtual router.

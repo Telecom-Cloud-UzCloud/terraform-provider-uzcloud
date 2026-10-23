@@ -3,20 +3,19 @@
 page_title: "uzc_vpc_acl_rule Resource - UzCloud"
 subcategory: ""
 description: |-
-  Manages a network ACL rule on a UzCloud VPC. There is no update endpoint, so changing any attribute recreates the rule. The resource ID is "{vpc}/{rule_id}".
+  Deprecated: use uzc_network_acl_list. Despite its name, this resource manages a network ACL list of a UzCloud VPC, not a rule; rules are managed with uzc_network_acl_rule. There is no update endpoint, so changing any attribute recreates the list. The resource ID is "{vpc}/{rule_id}".
 ---
 
 # uzc_vpc_acl_rule (Resource)
 
-Manages a network ACL rule on a UzCloud VPC. There is no update endpoint, so changing any attribute recreates the rule. The resource ID is "{vpc}/{rule_id}".
+Deprecated: use `uzc_network_acl_list`. Despite its name, this resource manages a network ACL list of a UzCloud VPC, not a rule; rules are managed with `uzc_network_acl_rule`. There is no update endpoint, so changing any attribute recreates the list. The resource ID is "{vpc}/{rule_id}".
 
 ## Example Usage
 
 ```terraform
-# There is no endpoint to delete a single ACL rule, so destroying this
-# resource fails with an error instead of silently drifting from reality.
-# Remove it from state manually with `terraform state rm` once you've
-# confirmed the desired state directly against the UzCloud portal.
+# Deprecated: despite its name this resource manages a network ACL list, not
+# a rule. Use uzc_network_acl_list for the list and uzc_network_acl_rule for
+# its rules.
 resource "uzc_vpc_acl_rule" "example" {
   vpc         = uzc_vpc.example.slug
   name        = "allow-ssh"
@@ -39,7 +38,7 @@ resource "uzc_vpc_acl_rule" "example" {
 ### Read-Only
 
 - `id` (String) "{vpc}/{rule_id}". Used for import.
-- `rule_id` (String) Server-assigned rule id.
+- `rule_id` (String) Server-assigned id of the ACL list.
 
 ## Import
 

@@ -25,12 +25,12 @@ resource "uzc_affinity_group" "example" {
 
 ### Required
 
-- `cloud_provider` (String)
 - `name` (String)
 - `type` (String) e.g. "host affinity".
 
 ### Optional
 
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `description` (String)
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.

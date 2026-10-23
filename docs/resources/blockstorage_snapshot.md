@@ -27,13 +27,13 @@ resource "uzc_blockstorage_snapshot" "example" {
 ### Required
 
 - `blockstorage` (String) Slug of the uzc_blockstorage volume to snapshot.
-- `cloud_provider` (String)
 - `name` (String)
 - `plan` (String) Plan slug for the snapshot.
 
 ### Optional
 
 - `billing_cycle` (String) Billing cycle slug. Defaults to "hourly": snapshots and backups are billed by usage, the API rejects monthly and yearly cycles for them, and the provider-level `billing_cycle` default is therefore not used.
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `is_memory` (Boolean)
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.

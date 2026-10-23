@@ -34,10 +34,13 @@ Provayderning Terraform Registry manzili: `telecom-cloud-uzcloud/uzcloud`.
 
 **Tarmoq**
 
-* [uzc_network](docs/resources/network.md) - izolyatsiyalangan yoki L2-tarmoq;
+* [uzc_network](docs/resources/network.md) - izolyatsiyalangan yoki L2-tarmoq yoki VPC quyi tarmog'i (tier);
 * [uzc_vpc](docs/resources/vpc.md) - VPC tarmog'i;
 * [uzc_vpc_restart](docs/resources/vpc_restart.md) - VPC tarmog'ini qayta ishga tushirish;
-* [uzc_vpc_acl_rule](docs/resources/vpc_acl_rule.md) - VPC uchun tarmoq ACL qoidasi;
+* [uzc_network_acl_list](docs/resources/network_acl_list.md) - VPC tarmoq ACL ro'yxati, quyi tarmoqlarga qo'llaniladi;
+* [uzc_network_acl_rule](docs/resources/network_acl_rule.md) - tarmoq ACL ro'yxatidagi qoida;
+* [uzc_vpc_static_route](docs/resources/vpc_static_route.md) - VPC statik marshruti;
+* [uzc_vpc_acl_rule](docs/resources/vpc_acl_rule.md) - eskirgan: ACL ro'yxatini boshqaradi, `uzc_network_acl_list` dan foydalaning;
 * [uzc_virtual_router](docs/resources/virtual_router.md) - virtual router;
 * [uzc_ip_address](docs/resources/ip_address.md) - ochiq yoki xususiy IP-manzil;
 * [uzc_static_nat](docs/resources/static_nat.md) - IP-manzildan virtual mashinaga statik NAT;
@@ -106,7 +109,7 @@ terraform {
   required_providers {
     uzc = {
       source  = "telecom-cloud-uzcloud/uzcloud"
-      version = ">= 1.1.0"
+      version = ">= 1.2.0"
     }
   }
 }
@@ -155,11 +158,14 @@ resource "uzc_virtual_machine" "example" {
   cloud_provider = "nimbo"
   project        = uzc_project.example.slug
   region         = "tashkent"
-  billing_cycle  = "hourly"
+  billing_cycle  = "monthly"
 
-  boot_source = "image"
-  template    = "ubuntu-22-04"
-  plan        = "box2cm2"
+  boot_source       = "image"
+  template          = "ubuntu-2404"
+  plan              = "optimal-line-2"
+  storage_category  = "ssd-storage" # see the uzc_storage_categories data source
+  blockstorage_plan = "standard-4"  # root disk plan, see uzc_plans with service "Block Storage"
+  network_type      = "Isolated"
 
   is_public = true
   ssh_key   = uzc_ssh_key.example.slug
@@ -206,7 +212,7 @@ Provayder kredensiallari va test ko'lami o'zgaruvchilarini o'rnating, so'ng ishg
 export TF_ACC=1
 export UZC_API_TOKEN=<api-token>
 export UZC_TEST_PROJECT=<existing-project-slug>
-export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # for tests that create a VM
+export UZC_TEST_NETWORK=<existing-isolated-network-slug>   # ixtiyoriy: usiz har bir test VM o'z tarmog'ini oladi
 export UZC_TEST_SSH_KEY=<existing-ssh-key-slug>            # for tests that create a VM
 
 make testacc
@@ -232,9 +238,9 @@ TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
 | --- | --- | --- |
 | `TestAccDataSources_*` | argumentsiz barcha datasource'lar, tariflar, slug bo'yicha qidiruv | loyiha |
 | `TestAccSSHKey_basic`, `TestAccProject_basic` | yaratish, import, nomini o'zgartirish | loyiha |
-| `TestAccNetwork_*`, `TestAccVPC_*` | izolyatsiyalangan tarmoq, yangi tarmoqdagi VM, VPC | loyiha; ixtiyoriy `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
-| `TestAccVirtualMachine_lifecycle` | yaratish, import, joyida nomini o'zgartirish, to'xtatish va ishga tushirish | tarmoq, SSH-kalit |
-| `TestAccBlockStorage_*` | ulash, uzish, qayta ulash, bir nechta qo'shimcha disk, yaratishda ulash | tarmoq, SSH-kalit |
+| `TestAccNetwork_*`, `TestAccVPC_*` | izolyatsiyalangan tarmoq, yangi tarmoqdagi VM, VPC, ACL ro'yxati, qoidasi va statik marshruti bilan VPC quyi tarmog'i | loyiha; ixtiyoriy `UZC_TEST_NETWORK_PLAN`, `UZC_TEST_VPC_PLAN` |
+| `TestAccVirtualMachine_lifecycle` | yaratish, import, to'xtatish va ishga tushirish | SSH-kalit |
+| `TestAccBlockStorage_*` | ulash, uzish, qayta ulash, bir nechta qo'shimcha disk, yaratishda ulash | SSH-kalit |
 | `TestAccObjectStorage_basic` | obyektli xotirani yaratish, import, o'lchamini joyida o'zgartirish | loyiha |
 | `TestAccVirtualMachine_public`, `TestAccIPAddress_firewall` | ochiq IP, firewall qoidasi | `UZC_TEST_PUBLIC=1`, `UZC_TEST_IP_PLAN` |
 | `TestAccKubernetesCluster_basic` | klaster yaratish, import, ixtiyoriy tarif almashtirish | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |

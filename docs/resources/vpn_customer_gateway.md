@@ -37,7 +37,6 @@ resource "uzc_vpn_customer_gateway" "example" {
 ### Required
 
 - `cidr_list` (String) Allowed CIDR ranges for VPN traffic.
-- `cloud_provider` (String)
 - `esp_encryption` (String)
 - `esp_hash` (String)
 - `esp_lifetime` (Number) ESP session validity duration, in seconds.
@@ -53,6 +52,7 @@ resource "uzc_vpn_customer_gateway" "example" {
 
 ### Optional
 
+- `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
 - `dead_peer_detection` (Boolean)
 - `force_encapsulation` (Boolean)
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.

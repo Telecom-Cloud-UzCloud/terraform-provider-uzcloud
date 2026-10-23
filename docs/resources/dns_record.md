@@ -3,24 +3,17 @@
 page_title: "uzc_dns_record Resource - UzCloud"
 subcategory: ""
 description: |-
-  Manages a record on a UzCloud DNS domain (POST /dns/domains/{domain}/records). There is no update endpoint, so changing any attribute recreates the resource.
-  TODO(api): the DELETE endpoint for this entity takes only the domain slug in its path, with no record id, query parameter, or body field to say which record to remove. Calling it as documented risks deleting every record on the domain rather than just this one, so this resource's Delete refuses to call it and fails loudly instead; remove the record through the UzCloud portal and then terraform state rm this resource once the real, scoped delete contract is confirmed. The spec also exposes no GET/list for a single record, so Read is a pass-through that trusts state rather than detecting drift.
+  Manages a record of a UzCloud DNS domain. A record is identified by its type and name; ttl and content are changed in place, changing domain, type or name recreates it. The resource ID is "{domain}/{type}/{name}".
 ---
 
 # uzc_dns_record (Resource)
 
-Manages a record on a UzCloud DNS domain (POST /dns/domains/{domain}/records). There is no update endpoint, so changing any attribute recreates the resource.
-
-TODO(api): the DELETE endpoint for this entity takes only the domain slug in its path, with no record id, query parameter, or body field to say which record to remove. Calling it as documented risks deleting every record on the domain rather than just this one, so this resource's Delete refuses to call it and fails loudly instead; remove the record through the UzCloud portal and then `terraform state rm` this resource once the real, scoped delete contract is confirmed. The spec also exposes no GET/list for a single record, so Read is a pass-through that trusts state rather than detecting drift.
+Manages a record of a UzCloud DNS domain. A record is identified by its type and name; `ttl` and `content` are changed in place, changing `domain`, `type` or `name` recreates it. The resource ID is "{domain}/{type}/{name}".
 
 ## Example Usage
 
 ```terraform
-# TODO(api): the DELETE endpoint for this entity takes only the domain
-# slug, with nothing to identify which record to remove, so destroying
-# this resource fails with an error instead of risking deletion of every
-# record on the domain. Remove the record through the UzCloud portal and
-# then `terraform state rm` this resource.
+# ttl and content change in place; domain, type and name identify the record.
 resource "uzc_dns_record" "example" {
   domain  = uzc_dns_domain.example.slug
   ttl     = 14400
@@ -37,10 +30,20 @@ resource "uzc_dns_record" "example" {
 
 - `content` (String) Record value, e.g. an IP address for an A/AAAA record.
 - `domain` (String) Slug of the uzc_dns_domain to add the record to.
-- `name` (String) Subdomain/name this record applies to.
-- `ttl` (Number) Seconds.
-- `type` (String) e.g. "A", "AAAA", "CNAME", "MX", "TXT".
+- `name` (String) Name within the domain, e.g. "www", or "@" for the domain itself.
+- `ttl` (Number) Seconds, e.g. 14400.
+- `type` (String) e.g. "A", "AAAA", "CNAME", "TXT", "NS".
 
 ### Read-Only
 
-- `id` (String) An opaque identifier, since the spec gives records no id of their own.
+- `id` (String) "{domain}/{type}/{name}". Used for import.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import uzc_dns_record.example <domain-slug>/<type>/<name>
+```
