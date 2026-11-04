@@ -74,7 +74,7 @@ resource "uzc_virtual_machine" "example" {
 - `compute_category` (String) Compute category slug. Changing this forces recreation.
 - `create_timeout_minutes` (Number) Minutes to wait for the VM to reach state Running after creation.
 - `custom_plan` (Attributes) Custom sizing, as an alternative to `plan`. Mutually exclusive with `plan`; exactly one must be set. Mutable: changing it calls change-plan. (see [below for nested schema](#nestedatt--custom_plan))
-- `default_network` (String) Default network slug. Changing this forces recreation.
+- `default_network` (String) Slug of the network that holds the default route, when `networks` has several. Defaults to the first of `networks`. Changing this forces recreation.
 - `delete_blockstorage_on_destroy` (Boolean) Whether to also delete attached block storage volumes when this VM is destroyed.
 - `delete_timeout_minutes` (Number) Minutes to wait for the VM to be fully gone after requesting deletion.
 - `hostname` (String) Hostname of the virtual machine. Defaults to `name` when unset. Mutable: changing it calls change-label.
@@ -107,8 +107,8 @@ resource "uzc_virtual_machine" "example" {
 - `id` (String) Same value as `slug`. Used as the Terraform resource ID.
 - `ipaddresses` (Attributes List) All IP addresses (public and private) attached to this VM. (see [below for nested schema](#nestedatt--ipaddresses))
 - `offering` (Attributes) Current sizing/pricing snapshot for this VM. (see [below for nested schema](#nestedatt--offering))
-- `private_ip` (String) Private IP address.
-- `public_ip` (String) Public IP address, once assigned. Empty until then, or if `is_public = false`.
+- `private_ip` (String) Private IP address on the default network.
+- `public_ip` (String) Public IP address, once assigned: for a VM in a VPC tier, the VPC address forwarded to it. Empty until then, or if `is_public = false`.
 - `slug` (String) Server-assigned slug, used in every /virtual-machines/{slug} call and for import.
 - `state` (String) Actual VM state reported by UzCloud: Starting, Running, Stopping, Stopped, or Error.
 - `updated_at` (String)

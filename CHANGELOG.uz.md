@@ -2,6 +2,19 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.1 (2026-yil 4-noyabr)
+
+##### YAXSHILANISHLAR:
+
+* compute: `networks`da VPC quyi tarmog'i yonida umumiy tarmoqni, masalan Internet-TAS1.3ni ko'rsatish mumkin, VM shu tarmoqning ochiq manzilini to'g'ridan-to'g'ri oladi; `default_network` standart holatda `networks`dagi birinchi tarmoqqa teng, tarmoqlar bir nechta bo'lganda API uni talab qiladi
+* compute: UzCloud `is_public = true` uchun ochiq IP bera olmasa, xato umumiy tarmoq variantini tavsiya qiladi
+
+##### TUZATISHLAR:
+
+* compute: VPC quyi tarmog'ida `is_public = true` bilan `uzc_virtual_machine` yaratish ochiq IPni 10 daqiqa kutar va VMni tainted deb belgilardi, garchi manzil berilgan bo'lsa ham: UzCloud uni faqat `ipaddresses`da qaytaradi. Endi API `public_ip` va `private_ip`ni bo'sh qoldirsa, ular `ipaddresses` va `networks`dan olinadi ([#1](https://github.com/Telecom-Cloud-UzCloud/terraform-provider-uzcloud/issues/1))
+* compute: bunday VM o'chirilganda ochiq IP akkauntda qolib ketardi; endi `is_public` belgilangan bo'lsa, manzil har doim bo'shatiladi
+* compute: kutishdan keyin ochiq IPsiz ishlayotgan VM endi tainted deb belgilanmaydi (shu sababli keyingi apply yangi VM yaratib, to'lov olardi); buning o'rniga ogohlantirish chiqadi, manzil esa keyingi yangilanishda olinadi
+
 ## 1.2.0 (2026-yil 23-oktabr)
 
 ##### YANGI IMKONIYATLAR:

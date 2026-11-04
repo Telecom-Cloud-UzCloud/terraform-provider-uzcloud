@@ -2,6 +2,19 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.1 (November 4, 2026)
+
+##### ENHANCEMENTS:
+
+* compute: a shared network such as Internet-TAS1.3 can be added to `networks` next to a VPC tier, so the VM gets a public address of that network directly; `default_network` defaults to the first of `networks`, which the API requires when there are several
+* compute: when UzCloud cannot allocate a public IP for `is_public = true`, the error explains the shared network alternative
+
+##### BUG FIXES:
+
+* compute: creating a `uzc_virtual_machine` with `is_public = true` in a VPC tier waited 10 minutes for a public IP and left the VM tainted, although the address was assigned: UzCloud reports it only in `ipaddresses`. `public_ip` and `private_ip` are now taken from `ipaddresses` and `networks` when the API leaves them empty ([#1](https://github.com/Telecom-Cloud-UzCloud/terraform-provider-uzcloud/issues/1))
+* compute: destroying such a VM kept its public IP allocated to the account; the address is now released whenever `is_public` is set
+* compute: a VM that is running but has no public IP after the wait is no longer tainted (which replaced, and billed, a new VM on the next apply); the apply warns instead and a later refresh records the address
+
 ## 1.2.0 (October 23, 2026)
 
 ##### FEATURES:
