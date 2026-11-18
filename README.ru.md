@@ -243,8 +243,7 @@ TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
 | `TestAccKubernetesCluster_basic` | создание кластера, импорт, опциональная смена тарифа | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |
 | `TestAccVMSnapshot_basic` | снапшот VM | `UZC_TEST_SNAPSHOT_PLAN` |
 
-Эти тесты создают платные ресурсы. `uzc_static_nat` не покрыт: в UzCloud нет эндпоинта,
-чтобы его отключить, поэтому тест не смог бы за собой прибрать.
+Эти тесты создают платные ресурсы.
 
 ## Документация
 

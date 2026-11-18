@@ -106,11 +106,12 @@ that are worth knowing about before relying on it:
   attribute forces Terraform to destroy and recreate the resource rather
   than update it in place. Each resource's own documentation says which of
   its attributes behave this way.
-- **One resource can't be deleted through the API, and says so loudly.**
-  UzCloud exposes no endpoint to disable a static NAT, so destroying
-  `uzc_static_nat` fails with instructions to reconcile state manually
-  (`terraform state rm`) once you've confirmed the real state against the
-  UzCloud portal, rather than silently drifting from reality.
+- **Imported virtual machines keep running.** UzCloud does not report a
+  VM's create-only arguments (`server`, `blockstorage_plan`, `ssh_key`, ...),
+  so after `terraform import` the first apply takes them from the
+  configuration and records them in place instead of replacing the VM.
+- **Debug logging.** With `TF_LOG=DEBUG` the provider logs every API request
+  and response; passwords, keys and kubeconfigs are masked.
 - **Kubernetes clusters export their kubeconfig.** `uzc_kubernetes_cluster`
   has a sensitive `kubeconfig` attribute and the API server `endpoint`, so a
   `kubernetes` or `helm` provider can use a cluster created in the same run.

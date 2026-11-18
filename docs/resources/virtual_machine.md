@@ -65,7 +65,7 @@ resource "uzc_virtual_machine" "example" {
 - `additional_options` (List of String) Extra provisioning options (e.g. ["monitoring"]). Changing this forces recreation.
 - `addons` (Attributes List) Addons purchased alongside the VM. Changing this forces recreation (no update endpoint is documented). (see [below for nested schema](#nestedatt--addons))
 - `billing_cycle` (String) Billing cycle slug (e.g. "hourly", "monthly"). Falls back to the provider's `billing_cycle` default when unset. Mutable: changing it calls change-plan.
-- `blockstorage_plan` (String) Block storage plan for the root disk (e.g. "standard-4", see the uzc_plans data source with service "Block Storage"). Required by the UzCloud API for image-based VMs. Changing this forces recreation.
+- `blockstorage_plan` (String) Block storage plan for the root disk (e.g. "standard-4", see the uzc_plans data source with service "Block Storage"). Required for image-based VMs on a `plan`; with `custom_plan` the root disk is sized by `custom_plan.storage` instead. Changing this forces recreation.
 - `blockstorage_snapshot` (String) Changing this forces recreation.
 - `boot_mode` (String) Changing this forces recreation.
 - `boot_source` (String) One of "image", "iso", or "snapshot". Changing this forces recreation.
@@ -74,7 +74,7 @@ resource "uzc_virtual_machine" "example" {
 - `compute_category` (String) Compute category slug. Changing this forces recreation.
 - `create_timeout_minutes` (Number) Minutes to wait for the VM to reach state Running after creation.
 - `custom_plan` (Attributes) Custom sizing, as an alternative to `plan`. Mutually exclusive with `plan`; exactly one must be set. Mutable: changing it calls change-plan. (see [below for nested schema](#nestedatt--custom_plan))
-- `default_network` (String) Slug of the network that holds the default route, when `networks` has several. Defaults to the first of `networks`. Changing this forces recreation.
+- `default_network` (String) Slug of the network that holds the default route, when `networks` has several. Defaults to the first of `networks`. Mutable: changing it moves the default route without recreating the VM.
 - `delete_blockstorage_on_destroy` (Boolean) Whether to also delete attached block storage volumes when this VM is destroyed.
 - `delete_timeout_minutes` (Number) Minutes to wait for the VM to be fully gone after requesting deletion.
 - `hostname` (String) Hostname of the virtual machine. Defaults to `name` when unset. Mutable: changing it calls change-label.
@@ -132,8 +132,8 @@ Required:
 Required:
 
 - `cpu` (Number) vCPU count.
-- `memory` (Number) Memory, in MB.
-- `storage` (Number) Root disk size, in GB.
+- `memory` (Number) Memory, in GB (at most 256).
+- `storage` (Number) Root disk size, in GB. Replaces `blockstorage_plan` for the root disk.
 
 
 <a id="nestedatt--ipaddresses"></a>

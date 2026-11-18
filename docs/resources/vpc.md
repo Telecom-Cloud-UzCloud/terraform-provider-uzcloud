@@ -36,7 +36,7 @@ resource "uzc_vpc" "example" {
 
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset. Changing this forces recreation.
 - `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset. Changing this forces recreation.
-- `description` (String) Changing this forces recreation (the update endpoint does not accept it).
+- `description` (String) Defaults to `name`. Changing this forces recreation (the update endpoint does not accept it).
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset. Changing this forces recreation.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset. Changing this forces recreation.
 - `storage_category` (String) Storage category slug. Changing this forces recreation.

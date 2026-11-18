@@ -246,8 +246,7 @@ TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
 | `TestAccKubernetesCluster_basic` | klaster yaratish, import, ixtiyoriy tarif almashtirish | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |
 | `TestAccVMSnapshot_basic` | VM snapshoti | `UZC_TEST_SNAPSHOT_PLAN` |
 
-Bu testlar pullik resurslar yaratadi. `uzc_static_nat` qamrab olinmagan: UzCloudda uni
-o'chirish uchun endpoint yo'q, shuning uchun test o'zidan keyin tozalay olmaydi.
+Bu testlar pullik resurslar yaratadi.
 
 ## Hujjatlar
 

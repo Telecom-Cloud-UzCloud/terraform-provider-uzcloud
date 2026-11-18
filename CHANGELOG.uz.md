@@ -2,6 +2,26 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.2 (2026-yil 18-noyabr)
+
+##### YAXSHILANISHLAR:
+
+* network: `uzc_static_nat`ni o'chirish (static NAT o'chiriladi, manzil qoladi) va IP-manzil slug'i bo'yicha import qilish mumkin; holatni yangilashda static NAT yoqilganligi tekshiriladi
+* compute: `uzc_virtual_machine`ning `default_network`i qayta yaratmasdan o'zgaradi: asosiy marshrut boshqa ulangan tarmoqqa ko'chiriladi
+* provider: `TF_LOG=DEBUG` bilan API'ga barcha so'rovlar va javoblar logga yoziladi; parollar, kalitlar va kubeconfig yashiriladi
+* loadbalancer: `uzc_load_balancer`ning bo'sh `rules` ro'yxati reja bosqichida rad etiladi
+
+##### TUZATISHLAR:
+
+* network: `uzc_ip_address` kvotadan qat'i nazar «Ip Address quota exceeded in your account» bilan to'xtardi: endi so'rov konsoldagi kabi bulut provayderi, hudud va loyihani yuboradi (yangi atributlar, provayder blokidan meros olinadi); `plan` ixtiyoriy bo'ldi
+* loadbalancer: `ipaddress` bilan `uzc_load_balancer` «The selected ipaddress is invalid» bilan to'xtardi: endi manzilning o'zi yuboriladi, `ipaddress`da `uzc_ip_address` slug'i ko'rsatilganda ham
+* compute: `custom_plan.storage` e'tiborga olinmas va ildiz disk disk tarifining hajmini olardi; endi u ildiz disk hajmini belgilaydi, `custom_plan` bilan `blockstorage_plan` kerak emas
+* compute: shartli ifoda bilan berilgan `custom_plan` «Value Conversion Error» bilan to'xtardi
+* compute: `terraform import`dan keyin reja VM'ni qayta yaratardi (UzCloud yaratishda beriladigan argumentlarni qaytarmaydi) yoki change-plan'da to'xtardi; endi birinchi apply bu argumentlarni qayta yaratmasdan yozib qo'yadi, to'lov davrini o'qiydi va hajm, parol hamda ishga tushirish skriptiga tegmaydi
+* docs: `custom_plan.memory` MB emas, GB'da beriladi (256 dan oshmaydi)
+* network: UzCloud VPC'ni qabul qilib, u paydo bo'lmasa, `uzc_vpc` amal taym-autini kutmasdan 5 daqiqadan keyin tushuntirish bilan to'xtaydi
+* network: `description`siz `uzc_vpc` yana yaratiladi; tavsif sifatida nomi ishlatiladi
+
 ## 1.2.1 (2026-yil 4-noyabr)
 
 ##### YAXSHILANISHLAR:

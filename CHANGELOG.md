@@ -2,6 +2,26 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.2 (November 18, 2026)
+
+##### ENHANCEMENTS:
+
+* network: `uzc_static_nat` can be destroyed (it disables static NAT and keeps the address) and imported by the slug of its IP address; refresh reads whether static NAT is still on
+* compute: `default_network` of `uzc_virtual_machine` changes in place, moving the default route to another attached network
+* provider: with `TF_LOG=DEBUG` every API request and response is logged; passwords, keys and kubeconfigs are masked
+* loadbalancer: an empty `rules` list of `uzc_load_balancer` is reported at plan time
+
+##### BUG FIXES:
+
+* network: `uzc_ip_address` failed with "Ip Address quota exceeded in your account" whatever the quota: the request now carries the cloud provider, region and project (new attributes, inherited from the provider block) as the console sends them; `plan` is optional
+* loadbalancer: `uzc_load_balancer` with `ipaddress` failed with "The selected ipaddress is invalid": the address itself is sent, also when `ipaddress` names a `uzc_ip_address` by slug
+* compute: `custom_plan.storage` was ignored and the root disk kept the size of the disk plan; it now sizes the root disk, and `blockstorage_plan` is not needed with `custom_plan`
+* compute: `custom_plan` set by a conditional expression failed with "Value Conversion Error"
+* compute: after `terraform import`, the plan replaced the VM (create-only arguments are not reported by UzCloud) or failed in change-plan; the first apply now records those arguments in place, reads the billing cycle, and leaves the size, password and startup script untouched
+* docs: `custom_plan.memory` is in GB (at most 256), not MB
+* network: when UzCloud accepts a VPC that never appears, `uzc_vpc` fails after 5 minutes with an explanation instead of waiting out the operation timeout
+* network: `uzc_vpc` without a `description` is created again; the description defaults to the name
+
 ## 1.2.1 (November 4, 2026)
 
 ##### ENHANCEMENTS:

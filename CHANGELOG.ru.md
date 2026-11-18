@@ -2,6 +2,26 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.2 (18 ноября 2026)
+
+##### УЛУЧШЕНИЯ:
+
+* network: `uzc_static_nat` можно удалить (static NAT отключается, адрес остаётся) и импортировать по slug IP-адреса; при обновлении состояния провайдер проверяет, включён ли static NAT
+* compute: `default_network` у `uzc_virtual_machine` меняется без пересоздания: основной маршрут переносится на другую подключённую сеть
+* provider: при `TF_LOG=DEBUG` в лог пишутся все запросы к API и ответы; пароли, ключи и kubeconfig скрываются
+* loadbalancer: пустой список `rules` у `uzc_load_balancer` отклоняется на этапе плана
+
+##### ИСПРАВЛЕНИЯ:
+
+* network: `uzc_ip_address` падал с «Ip Address quota exceeded in your account» независимо от квоты: теперь запрос передаёт облачного провайдера, регион и проект (новые атрибуты, наследуются из блока провайдера), как это делает консоль; `plan` стал необязательным
+* loadbalancer: `uzc_load_balancer` с `ipaddress` падал с «The selected ipaddress is invalid»: теперь отправляется сам адрес, в том числе когда в `ipaddress` указан slug `uzc_ip_address`
+* compute: `custom_plan.storage` игнорировался, и корневой диск получал размер тарифа диска; теперь он задаёт размер корневого диска, а `blockstorage_plan` с `custom_plan` не нужен
+* compute: `custom_plan`, заданный условным выражением, падал с «Value Conversion Error»
+* compute: после `terraform import` план пересоздавал VM (UzCloud не возвращает аргументы, задаваемые при создании) или падал на change-plan; теперь первый apply записывает эти аргументы без пересоздания, читает цикл оплаты и не трогает размер, пароль и стартовый скрипт
+* docs: `custom_plan.memory` задаётся в ГБ (не больше 256), а не в МБ
+* network: если UzCloud принял VPC, но тот так и не появился, `uzc_vpc` через 5 минут завершается с объяснением, а не ждёт весь тайм-аут операции
+* network: `uzc_vpc` без `description` снова создаётся; описанием по умолчанию становится имя
+
 ## 1.2.1 (4 ноября 2026)
 
 ##### УЛУЧШЕНИЯ:

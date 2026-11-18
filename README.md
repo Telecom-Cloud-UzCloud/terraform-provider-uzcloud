@@ -244,8 +244,7 @@ TF_ACC=1 go test ./internal/provider -run 'TestAccBlockStorage' -v -timeout 90m
 | `TestAccKubernetesCluster_basic` | cluster create, import, optional plan change | `UZC_TEST_K8S_VERSION`, `UZC_TEST_K8S_PLAN` |
 | `TestAccVMSnapshot_basic` | VM snapshot | `UZC_TEST_SNAPSHOT_PLAN` |
 
-These tests create billable resources. `uzc_static_nat` is not covered because UzCloud
-has no endpoint to disable it, so a test could not clean up after itself.
+These tests create billable resources.
 
 ## Documentation
 

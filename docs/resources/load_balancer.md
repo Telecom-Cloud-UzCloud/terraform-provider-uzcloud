@@ -16,7 +16,7 @@ Manages a UzCloud load balancer. There is no update endpoint, so changing any at
 resource "uzc_load_balancer" "example" {
   cloud_provider = "nimbo"
   network        = uzc_network.example.slug
-  plan           = "load-balancer"
+  plan           = "lb-1"
   name           = "example-lb"
 
   rules = [
@@ -29,6 +29,25 @@ resource "uzc_load_balancer" "example" {
       virtual_machines = [
         { slug = uzc_virtual_machine.example.slug }
       ]
+    }
+  ]
+}
+
+# A load balancer on an address acquired earlier: the slug of a
+# uzc_ip_address in the same network, or the address itself
+resource "uzc_load_balancer" "on_existing_ip" {
+  network   = uzc_network.example.slug
+  plan      = "lb-1"
+  name      = "example-lb-2"
+  ipaddress = uzc_ip_address.example.slug
+
+  rules = [
+    {
+      name         = "https"
+      public_port  = "443"
+      private_port = 443
+      protocol     = "tcp"
+      algorithm    = "roundrobin"
     }
   ]
 }
@@ -46,10 +65,10 @@ resource "uzc_load_balancer" "example" {
 
 ### Optional
 
-- `aquire_new_ip` (Boolean) Whether to acquire a new IP address for the load balancer. Mutually exclusive with `ipaddress` in practice.
+- `aquire_new_ip` (Boolean) Whether to acquire a new IP address for the load balancer. Ignored when `ipaddress` is set.
 - `billing_cycle` (String) Billing cycle slug. Falls back to the provider's `billing_cycle` default when unset.
 - `cloud_provider` (String) Cloud provider slug. Falls back to the provider's `cloud_provider` default when unset.
-- `ipaddress` (String) Slug of an existing uzc_ip_address to use instead of acquiring a new one.
+- `ipaddress` (String) An existing IP address to use instead of acquiring a new one: the slug of a uzc_ip_address, or the address itself. It must belong to the load balancer's network and be free.
 - `project` (String) Project slug. Falls back to the provider's `project` default when unset.
 - `region` (String) Region slug. Falls back to the provider's `region` default when unset.
 

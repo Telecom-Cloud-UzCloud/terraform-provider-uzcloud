@@ -3,20 +3,18 @@
 page_title: "uzc_static_nat Resource - UzCloud"
 subcategory: ""
 description: |-
-  Enables static NAT (POST /ipaddresses/{ip}/static-nat) from a uzc_ip_address to a virtual machine. The spec documents no corresponding disable endpoint, so destroying this resource fails loudly rather than silently dropping it from state while static NAT stays enabled on the real IP address.
+  Forwards a uzc_ip_address to a virtual machine (static NAT, one to one). Destroying the resource disables static NAT and keeps the address. Import it by the slug of the IP address.
 ---
 
 # uzc_static_nat (Resource)
 
-Enables static NAT (POST /ipaddresses/{ip}/static-nat) from a uzc_ip_address to a virtual machine. The spec documents no corresponding disable endpoint, so destroying this resource fails loudly rather than silently dropping it from state while static NAT stays enabled on the real IP address.
+Forwards a uzc_ip_address to a virtual machine (static NAT, one to one). Destroying the resource disables static NAT and keeps the address. Import it by the slug of the IP address.
 
 ## Example Usage
 
 ```terraform
-# There is no endpoint to disable static NAT once enabled, so destroying
-# this resource fails with an error instead of silently drifting from
-# reality. Remove it from state manually with `terraform state rm` once
-# you've confirmed the desired state directly against the UzCloud portal.
+# Forwards the address to the VM one to one. Destroying it disables static
+# NAT and keeps the address.
 resource "uzc_static_nat" "example" {
   ip_address      = uzc_ip_address.example.slug
   virtual_machine = uzc_virtual_machine.example.slug
@@ -34,3 +32,13 @@ resource "uzc_static_nat" "example" {
 ### Read-Only
 
 - `id` (String) Same value as `ip_address`.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import uzc_static_nat.example <ip-address-slug>
+```
