@@ -3,12 +3,12 @@
 page_title: "uzc_dns_record Resource - UzCloud"
 subcategory: ""
 description: |-
-  Manages a record of a UzCloud DNS domain. A record is identified by its type and name; ttl and content are changed in place, changing domain, type or name recreates it. The resource ID is "{domain}/{type}/{name}".
+  Not available: the UzCloud DNS service is in development, and using this in a configuration fails with an error. Manages a record of a UzCloud DNS domain. A record is identified by its type and name; ttl and content are changed in place, changing domain, type or name recreates it. The resource ID is "{domain}/{type}/{name}".
 ---
 
 # uzc_dns_record (Resource)
 
-Manages a record of a UzCloud DNS domain. A record is identified by its type and name; `ttl` and `content` are changed in place, changing `domain`, `type` or `name` recreates it. The resource ID is "{domain}/{type}/{name}".
+**Not available:** the UzCloud DNS service is in development, and using this in a configuration fails with an error. Manages a record of a UzCloud DNS domain. A record is identified by its type and name; `ttl` and `content` are changed in place, changing `domain`, `type` or `name` recreates it. The resource ID is "{domain}/{type}/{name}".
 
 ## Example Usage
 

@@ -51,8 +51,8 @@ Registry-адрес провайдера: `telecom-cloud-uzcloud/uzcloud`.
 * [uzc_vpn_gateway](docs/resources/vpn_gateway.md) - шлюз site-to-site VPN на VPC;
 * [uzc_vpn_user](docs/resources/vpn_user.md) - пользователь VPN удалённого доступа;
 * [uzc_vpn_customer_gateway](docs/resources/vpn_customer_gateway.md) - клиентский шлюз site-to-site VPN;
-* [uzc_dns_domain](docs/resources/dns_domain.md) - DNS-домен;
-* [uzc_dns_record](docs/resources/dns_record.md) - DNS-запись в домене;
+* [uzc_dns_domain](docs/resources/dns_domain.md) - DNS-домен (пока недоступно: в разработке);
+* [uzc_dns_record](docs/resources/dns_record.md) - DNS-запись в домене (пока недоступно: в разработке);
 
 **Managed-сервисы**
 
@@ -93,7 +93,7 @@ Registry-адрес провайдера: `telecom-cloud-uzcloud/uzcloud`.
 * [uzc_load_balancers](docs/data-sources/load_balancers.md) - балансировщики нагрузки;
 * [uzc_kubernetes_clusters](docs/data-sources/kubernetes_clusters.md) - управляемые кластеры Kubernetes;
 * [uzc_autoscales](docs/data-sources/autoscales.md) - группы автомасштабирования VM;
-* [uzc_dns_domains](docs/data-sources/dns_domains.md) - DNS-домены;
+* [uzc_dns_domains](docs/data-sources/dns_domains.md) - DNS-домены (пока недоступно: в разработке);
 * [uzc_monitoring_charts](docs/data-sources/monitoring_charts.md) - доступные определения графиков мониторинга;
 
 ## Требования

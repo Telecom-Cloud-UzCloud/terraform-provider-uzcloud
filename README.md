@@ -51,8 +51,8 @@ The provider's Terraform Registry source address is `telecom-cloud-uzcloud/uzclo
 * [uzc_vpn_gateway](docs/resources/vpn_gateway.md) - site-to-site VPN gateway on a VPC;
 * [uzc_vpn_user](docs/resources/vpn_user.md) - remote access VPN user;
 * [uzc_vpn_customer_gateway](docs/resources/vpn_customer_gateway.md) - site-to-site VPN customer gateway;
-* [uzc_dns_domain](docs/resources/dns_domain.md) - DNS domain;
-* [uzc_dns_record](docs/resources/dns_record.md) - DNS record on a domain;
+* [uzc_dns_domain](docs/resources/dns_domain.md) - DNS domain (not available yet: in development);
+* [uzc_dns_record](docs/resources/dns_record.md) - DNS record on a domain (not available yet: in development);
 
 **Managed services**
 
@@ -93,7 +93,7 @@ The provider's Terraform Registry source address is `telecom-cloud-uzcloud/uzclo
 * [uzc_load_balancers](docs/data-sources/load_balancers.md) - load balancers;
 * [uzc_kubernetes_clusters](docs/data-sources/kubernetes_clusters.md) - managed Kubernetes clusters;
 * [uzc_autoscales](docs/data-sources/autoscales.md) - VM autoscale groups;
-* [uzc_dns_domains](docs/data-sources/dns_domains.md) - DNS domains;
+* [uzc_dns_domains](docs/data-sources/dns_domains.md) - DNS domains (not available yet: in development);
 * [uzc_monitoring_charts](docs/data-sources/monitoring_charts.md) - available monitoring chart definitions;
 
 ## Requirements

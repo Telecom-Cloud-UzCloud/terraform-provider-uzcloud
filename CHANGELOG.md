@@ -2,6 +2,12 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.3 (November 27, 2026)
+
+##### NOTES:
+
+* dns: the UzCloud DNS service is in development, so `uzc_dns_domain`, `uzc_dns_record` and `uzc_dns_domains` are not available: a configuration that uses them fails at validation with an explanation. They will be enabled in a later release
+
 ## 1.2.2 (November 18, 2026)
 
 ##### ENHANCEMENTS:

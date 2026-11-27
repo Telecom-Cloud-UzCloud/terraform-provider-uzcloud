@@ -2,6 +2,12 @@
 
 [🇬🇧 English](CHANGELOG.md) | [🇷🇺 Русский](CHANGELOG.ru.md) | [🇺🇿 O'zbekcha](CHANGELOG.uz.md)
 
+## 1.2.3 (2026-yil 27-noyabr)
+
+##### ESLATMALAR:
+
+* dns: UzCloud DNS xizmati ishlab chiqilmoqda, shuning uchun `uzc_dns_domain`, `uzc_dns_record` va `uzc_dns_domains` mavjud emas: ularni ishlatgan konfiguratsiya tekshiruv bosqichida tushuntirish bilan xato beradi. Ular keyingi relizlardan birida yoqiladi
+
 ## 1.2.2 (2026-yil 18-noyabr)
 
 ##### YAXSHILANISHLAR:

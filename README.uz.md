@@ -51,8 +51,8 @@ Provayderning Terraform Registry manzili: `telecom-cloud-uzcloud/uzcloud`.
 * [uzc_vpn_gateway](docs/resources/vpn_gateway.md) - VPC uchun site-to-site VPN shlyuzi;
 * [uzc_vpn_user](docs/resources/vpn_user.md) - masofaviy kirish VPN foydalanuvchisi;
 * [uzc_vpn_customer_gateway](docs/resources/vpn_customer_gateway.md) - site-to-site VPN mijoz shlyuzi;
-* [uzc_dns_domain](docs/resources/dns_domain.md) - DNS-domen;
-* [uzc_dns_record](docs/resources/dns_record.md) - domendagi DNS-yozuv;
+* [uzc_dns_domain](docs/resources/dns_domain.md) - DNS-domen (hozircha mavjud emas: ishlab chiqilmoqda);
+* [uzc_dns_record](docs/resources/dns_record.md) - domendagi DNS-yozuv (hozircha mavjud emas: ishlab chiqilmoqda);
 
 **Boshqariladigan xizmatlar**
 
@@ -93,7 +93,7 @@ Provayderning Terraform Registry manzili: `telecom-cloud-uzcloud/uzcloud`.
 * [uzc_load_balancers](docs/data-sources/load_balancers.md) - load balancerlar;
 * [uzc_kubernetes_clusters](docs/data-sources/kubernetes_clusters.md) - boshqariladigan Kubernetes klasterlari;
 * [uzc_autoscales](docs/data-sources/autoscales.md) - VM avtomasshtablash guruhlari;
-* [uzc_dns_domains](docs/data-sources/dns_domains.md) - DNS-domenlar;
+* [uzc_dns_domains](docs/data-sources/dns_domains.md) - DNS-domenlar (hozircha mavjud emas: ishlab chiqilmoqda);
 * [uzc_monitoring_charts](docs/data-sources/monitoring_charts.md) - mavjud monitoring grafik ta'riflari;
 
 ## Talablar

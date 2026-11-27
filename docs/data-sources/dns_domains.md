@@ -3,12 +3,12 @@
 page_title: "uzc_dns_domains Data Source - UzCloud"
 subcategory: ""
 description: |-
-  Lists UzCloud DNS domains.
+  Not available: the UzCloud DNS service is in development, and using this in a configuration fails with an error. Lists UzCloud DNS domains.
 ---
 
 # uzc_dns_domains (Data Source)
 
-Lists UzCloud DNS domains.
+**Not available:** the UzCloud DNS service is in development, and using this in a configuration fails with an error. Lists UzCloud DNS domains.
 
 ## Example Usage
 

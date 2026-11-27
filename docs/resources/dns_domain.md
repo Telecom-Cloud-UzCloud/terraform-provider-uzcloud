@@ -3,12 +3,12 @@
 page_title: "uzc_dns_domain Resource - UzCloud"
 subcategory: ""
 description: |-
-  Manages a UzCloud DNS domain. There is no update endpoint, so changing any attribute recreates the resource. GET /dns/domains/{slug} requires the domain's dns_provider as a query parameter, so import needs both: use "{slug}/{dns_provider}", not the bare slug.
+  Not available: the UzCloud DNS service is in development, and using this in a configuration fails with an error. Manages a UzCloud DNS domain. There is no update endpoint, so changing any attribute recreates the resource. GET /dns/domains/{slug} requires the domain's dns_provider as a query parameter, so import needs both: use "{slug}/{dns_provider}", not the bare slug.
 ---
 
 # uzc_dns_domain (Resource)
 
-Manages a UzCloud DNS domain. There is no update endpoint, so changing any attribute recreates the resource. GET /dns/domains/{slug} requires the domain's dns_provider as a query parameter, so import needs both: use "{slug}/{dns_provider}", not the bare slug.
+**Not available:** the UzCloud DNS service is in development, and using this in a configuration fails with an error. Manages a UzCloud DNS domain. There is no update endpoint, so changing any attribute recreates the resource. GET /dns/domains/{slug} requires the domain's dns_provider as a query parameter, so import needs both: use "{slug}/{dns_provider}", not the bare slug.
 
 ## Example Usage
 
